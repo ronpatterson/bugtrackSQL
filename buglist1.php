@@ -1,13 +1,13 @@
 <?php
-//require("../session.php");
 // buglist1.php
 // Ron Patterson, WildDog Design
-// PDO version
+// SQLite version
 // return a standard <select> for a lookup table
+#require("btsession.php");
 // connect to the database 
 require("bugcommon.php");
 $max=50;
-$start=isset($_GET["start"]) ? $_GET["start"] : "";
+$start=isset($_POST["start"]) ? $_POST["start"] : "";
 if ($start == "") $start=0;
 $ttl="BugTrack Bugs List";
 $dbh = $db->getHandle();
@@ -22,13 +22,76 @@ $dbh = $db->getHandle();
 </thead>
 <tbody>
 <?php
+$start=isset($_POST["start"]) ? intval($_POST["start"]) : 0;
+$type=isset($_POST["type"]) ? $_POST["type"] : "open";
+$bugtype=isset($_POST["bug_type"]) ? $_POST["bug_type"] : "";
+if ($start == "") $start=0;
+$ttl="BugTrack Bugs List";
+$otype="open";
+$nextlink="";
+$crit = "";
+if ($type == "closed") {
+	$ttl="BugTrack Closed List";
+	$otype = "closed";
+}
+if ($type == "bytype") {
+	$arr=split("[|]",$_POST["sel_arg"]);
+	$cd=$arr[0];
+	if ($cd == "0" or $cd == " ") {
+		echo "<b>No bug type selected</b>";
+		exit;
+	}
+	$stype=$arr[1];
+	$crit .= " and bug_type='$cd'";
+	$ttl="BugTrack $type List";
+	$otype = "open";
+}
+if ($type == "bystatus") {
+	$status=$_POST["sel_arg"];
+	if ($status == "0" or $status == " ") {
+		echo "<b>No status type selected</b>";
+		exit;
+	}
+	$stype=$sarr[$status];
+	$ttl="BugTrack $type List";
+	$otype = $status;
+}
+if ($type == "bypriority") {
+	$priority=isset($_POST["priority"]) ? $_POST["priority"] : "";
+	if ($status == "0" or $status == " ") {
+		echo "<b>No priority type selected</b>";
+		exit;
+	}
+	$stype=$parr[$priority];
+	$ttl="BugTrack $type List";
+	$otype = "open";
+}
+if ($type == "assignments") {
+	$crit .= " and assigned_to='".$_SESSION['user_id']."'";
+	#$uname=$_SESSION['uname'];
+	#$sql = "select id,lname,fname,nname,portal_role,emploc from metaman.d20_person where empnbr=$empnbr";
+	#$sth = $dbh->prepare($sql);
+	#$sth->execute();
+	#$arr = $sth->fetchColumn();
+	$ttl="BugTrack My Assignments";
+	#$type = "open";
+	$otype = "open";
+}
+if ($type == "unassigned") {
+	$crit .= " and ifnull(assigned_to,'')=''";
+	$ttl="BugTrack Unassigned";
+	#$type = "open";
+	$otype = "open";
+}
+$crit .= " and status='".substr($otype,0,1)."'";
 // execute query 
-$sql = "select count(*) from bt_bugs";
+$sql = "select count(*) from bt_bugs where 1=1 $crit";
+echo $sql;
 $count = $dbh->querySingle($sql);
 //echo $count;
 $cnt2=0; $out="";
 if ($count > 0) {
-	$sql = "select * from bt_bugs order by bug_id desc -- limit $start,$max";
+	$sql = "select * from bt_bugs where 1=1 $crit order by bug_id desc -- limit $start,$max";
 	$stmt = $dbh->query($sql);
 	// loop thru all rows
     while ($arr = $stmt->fetchArray(SQLITE3_NUM)) {
@@ -38,7 +101,7 @@ if ($count > 0) {
 		//$class = $count%2==0 ? "even" : "odd";
 		$out .= <<<END
 <tr valign="top">
-<td><a href="#" onclick="return bt_bugshow(null,$id);"><b>$bug_id</b></a></td>
+<td><a href="#" onclick="return bt.bugshow(null,$id);"><b>$bug_id</b></a></td>
 <td>$descr</td>
 <td>$entry_dt</td>
 <td>{$sarr[$status]}</td>

@@ -24,7 +24,7 @@ $rows = $bug->getBugAttachments($id);
 if (count($rows) > 0)
 {
 	foreach ($rows as $row) {
-		list($aid, $bug_id, $fname, $size, $attachment, $entry_dtm)=$row;
+		list($aid, $fname, $size)=$row;
 		$files.="<a href='get_file.php?id=$aid' target='_blank'>$fname</a> (<a href='#' onclick='return remove_file($aid);'>Remove</a>) ($size)<br />";
 	}
 }

@@ -1,7 +1,7 @@
 <?php
 // Ron Patterson, WildDog Design
 // PDO version
-require("../session.php");
+#require("../session.php");
 // handle bug delete
 extract($_POST);
 $ttl="Bug Delete";

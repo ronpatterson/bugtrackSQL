@@ -1,6 +1,7 @@
 <?php
 // bugshow1.php
 // Ron Patterson, WildDog Design
+// SQLite version
 ini_set("display_errors", "1");
 require("bugcommon.php");
 
@@ -47,7 +48,7 @@ $alink = ""; $elink = "";
 //if (ereg($_SESSION["uname"],AUSERS)) {
 	$alink = "<a href='#' onclick='return assign_locate($id)'>Assign</a>";
 	$elink = <<<END
-<a href="#" onclick="return bt_bugedit(event,$id);">Edit record</a>
+<a href="#" onclick="return bt.bugedit(event,$id);">Edit record</a>
 -- <a href="#" onclick="return delete_entry($id);">Delete</a> --
 END;
 //}
@@ -121,14 +122,14 @@ if ($type == "unassigned") {
 </fieldset>
 <p align="center">
 <?php echo $elink ?>
-<a href="bt_buglist.php?<?php echo $nextlink; ?>">Show list</a>
--- <a href="#" onclick="return bt_email_bug(<?php echo $id; ?>);">Email Bug</a>
+<a href="bt.buglist.php?<?php echo $nextlink; ?>">Show list</a>
+-- <a href="#" onclick="return bt.email_bug(<?php echo $id; ?>);">Email Bug</a>
 </p>
 <div id="worklogDiv">
 <?php
 $rows = $db->getWorkLogEntries($id);
 $count = count($rows);
-echo "<p align='center'>$count Worklog entries found -- <a href='#' onclick='return bt_add_worklog(event,$id);'>Add</a><p>\n";
+echo "<p align='center'>$count Worklog entries found -- <a href='#' onclick='return bt.add_worklog(event,$id);'>Add</a><p>\n";
 if ($count > 0):
 ?>
 <table border="1" cellspacing="0" cellpadding="3" class="worklog">

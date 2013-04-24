@@ -183,7 +183,7 @@ function assign_locate (id) {
 function search_list (event) {
 	$('#results').html("Working...");
 	//alert("search_list called");
-	$('#results').load('bugassignAjax.php', $('#form9').serializeArray());
+	$('#results').load('bugassignAjax.php', $('#bt_form9').serializeArray());
 	return false;
 }
 
@@ -234,8 +234,8 @@ function close_win (w) {
 }
 
 $(function() {
-	$('#form9').submit(search_list);
-	if ($('#form9').length > 0) $('#lname').focus();
+	$('#bt_form9').submit(search_list);
+	if ($('#bt_form9').length > 0) $('#lname').focus();
 });
 
 //alert(checkemail("test-foo@ron.com"));

@@ -50,12 +50,16 @@ create table bt_worklog (
 );
 create index bt_bid_idx on bt_worklog(bug_id);
 
+// attach file structure
+// /usr/local/data
+// /usr/local/data/{first 2 chars of hash}/{hash}
+
 create table bt_attachments (
 	id				integer not null primary key autoincrement,
 	bug_id			integer, -- references bt_bugs,
 	file_name		text,
 	file_size		text,
-	attachment		blob,
+	file_hash		text,
 	entry_dtm		datetime
 );
 

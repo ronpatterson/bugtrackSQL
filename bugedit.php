@@ -1,9 +1,10 @@
 <?php
 // bugedit.php
 // Ron Patterson, WildDog Design
-// PDO version
-//require("../session.php");
+// SQLite version
+#require("btsession.php");
 #print_r($_SESSION);
+
 # return a standard <select> for a lookup table
 function retselect2 ($dbh, $name, $tab, $def) {
 	$out = "<select name='$name' id='$name'><option value=' '>--Select one--\n<option value='0'>None</option>\n";
@@ -17,6 +18,7 @@ function retselect2 ($dbh, $name, $tab, $def) {
 	$out .= "</select>\n";
 	return $out;
 }
+
 // connect to the database 
 require("bugcommon.php");
 $dbh = $db->getHandle();

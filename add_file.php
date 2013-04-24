@@ -5,7 +5,7 @@
 
 ini_set("display_errors","0");
 
-require("../session.php");
+require("btsession.php");
 #print_r($_SESSION);
 
 $method = strtolower($_SERVER["REQUEST_METHOD"]);
@@ -17,12 +17,13 @@ else {
 	$id = isset($_GET["id"]) ? intval($_GET["id"]) : "";
 }
 
+require_once("dbdef.php");
 require("bugcommon.php");
 require("BugTrack.class.php");
 $ttl = "BugTrack Attachment";
-$usernm = "ron";
+$usernm = "rlpatter";
 
-$bug = new BugTrack();
+$bug = new BugTrack($dbpath);
 
 #if ($id == "") die("No ID provided");
 
@@ -41,9 +42,9 @@ if (!file_exists($dir)) {
 ?>
 <html>
 <head>
-	<title><? echo $ttl ?></title>
+	<title><?php echo $ttl ?></title>
 	<link href="bugtrack.css" rel="stylesheet" type="text/css" />
-	<script type="text/javascript" src="../jquery.js"></script>
+	<script type="text/javascript" src="/lib/scripts/DataTables/media/js/jquery.js"></script>
 	<script type="text/javascript" src="add_file.js"></script>
 	<style type="text/css">
 	<!--
@@ -55,7 +56,7 @@ if (!file_exists($dir)) {
 	</style>
 </head>
 <body style="font-family: Sans-Serif,Helvetica,Arial">
-<?
+<?php
 $fileedit = 1;
 $filelink = 1;
 $fileupload = 1;
@@ -98,7 +99,6 @@ if ($msg == "" and isset($_FILES['upfile']) and is_uploaded_file($_FILES['upfile
 		$msg .= "File name exceeds maximum size ($maxnamesize character max.)<br>\n";
 	}
 	elseif ($_FILES['upfile']['name'] != "upload.php") {
-		require("dbdefpdo.php");
 		#$newname = ereg_replace("[^A-Za-z0-9._]","_",$_FILES['upfile']['name']);
 		#print_r($_FILES); exit;
 		$newname = ereg_replace("[^A-Za-z0-9._]","_",$_FILES['upfile']['name']);
@@ -108,8 +108,10 @@ if ($msg == "" and isset($_FILES['upfile']) and is_uploaded_file($_FILES['upfile
 		move_uploaded_file($_FILES['upfile']['tmp_name'],$new_filename);		
 		// read the file into memory
 		$size = $_FILES['upfile']['size'];
-		$raw_file = addslashes(fread(fopen($new_filename, "r"), $size));
-		$filename = addslashes($_FILES['upfile']['name']);
+		//$raw_file = addslashes(fread(fopen($new_filename, "r"), $size));
+		$raw_file = file_get_contents($new_filename);
+		//$filename = addslashes($_FILES['upfile']['name']);
+		$filename = $_FILES['upfile']['name'];
 		$id = $bug->addAttachment($id, $filename, $size, $raw_file);
 		$msg .= "File is valid, and was successfully uploaded as {$_FILES['upfile']['name']}.\n";
 		echo "<script type='text/javascript'>fini_upload();</script>";
@@ -129,11 +131,11 @@ if ($msg == "" and isset($_FILES['upfile']) and is_uploaded_file($_FILES['upfile
 	}
 }
 ?>
-<div id="errors"><? echo $msg ?></div>
+<div id="errors"><?php echo $msg ?></div>
 <fieldset>
 	<legend>Attachment Upload</legend>
 	<form name="form1" enctype="multipart/form-data" method="post" onsubmit="return upload_file();">
-		<input type="hidden" name="id" id="id" value="<? echo $id ?>">
+		<input type="hidden" name="id" id="id" value="<?php echo $id ?>">
 		<input type="hidden" name="MAX_FILE_SIZE" value="8000000">
 		<input type="hidden" name="update_list" id="update_list" value="0" onchange="alert('changed='+this.value);">
 		<table border="0" cellspacing="1" cellpadding="3">
@@ -143,10 +145,10 @@ if ($msg == "" and isset($_FILES['upfile']) and is_uploaded_file($_FILES['upfile
 	</form>
 	<div id="msg3">Note: Make sure that the names of your upload document files are clear
 and only contain letters, numbers, underscores (_), dashes (-), periods (.), or spaces.
-Also only the following file types are allowed: <? echo join(", ",$allowed)."."; ?>
+Also only the following file types are allowed: <?php echo join(", ",$allowed)."."; ?>
 	</div>
 </fieldset>
 <br>
 <p><a href="#" onclick="close_win(window.opener.w);">Close window</a></p>
-<? require("footer.php"); ?>
+<?php require("footer.php"); ?>
 </body></html>

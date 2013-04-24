@@ -3,12 +3,22 @@
 // Ron Patterson, WildDog Design
 // PDO version
 	session_cache_limiter("private, must-revalidate");
+	
+	$id = $_GET["id"];
+	
+	require("dbdef.php");
 	require("BugTrack.class.php");
 
-	$bug = new BugTrack();
+	$bug = new BugTrack($dbpath);
 
-	$r = $bug->getBugAttachment($id,PDO::FETCH_OBJ);
+	$r = $bug->getBugAttachment($id);
 	if (!$r) die("ERROR: No attachment found ($id)");
+	//print_r($r); exit;
+	$r = (object)$r[0];
+	$hash = $r->file_hash;
+	$pdir = substr($hash,0,2);
+	$data = file_get_contents($bug->getAdir().$pdir."/".$hash);
+	//echo base64_encode($data); exit;
 
 	$ext=substr(strrchr($r->file_name, "."), 1); 
 	switch (strtolower($ext)) {
@@ -56,5 +66,6 @@
 			header("Content-type: application/octet-stream");
 			header("Content-Disposition: attachment; filename=\"$r->file_name\"");
 	}
-    echo $r->attachment;
+    //echo $r->attachment;
+    echo $data;
 ?>

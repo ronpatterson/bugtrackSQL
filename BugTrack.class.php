@@ -17,6 +17,7 @@ function q ($val) {
 	
 class BugTrack {
 	protected $dbh;
+	protected $adir = "/usr/local/data/";
 	protected $tblsArray = array();
 	
 	public function __construct ( $dbpath )
@@ -289,30 +290,57 @@ END;
 	// rec = record array
 	public function addAttachment ($id, $filename, $size, $raw_file)
 	{
-		// id, bug_id, file_name, file_size, attachment, entry_dtm
-		extract($rec);
-		$sql  = "insert into bt_attachments (bug_id, file_name, file_size, attachment, entry_dtm) values (?,?,?,?,datetime('now'))";
+		// id, bug_id, file_name, file_size, file_hash, entry_dtm
+		//extract($rec);
+		//$hash = md5($id.$filename.date("YmdHis"));
+		$hash = md5($raw_file);
+		$sql  = "insert into bt_attachments (bug_id, file_name, file_size, file_hash, entry_dtm) values (?,?,?,?,datetime('now'))";
 		$stmt = $this->dbh->prepare($sql);
-		$params = array(intval($id),$filename,$size." Bytes",$raw_file);
+		$params = array(intval($id),$filename,$size." Bytes",$hash);
 		#echo $sql;
 		for ($i=0; $i<count($params); ++$i) $stmt->bindValue($i+1,$params[$i]);
 		$result = $stmt->execute();
 		if ($result === FALSE) die("SQL ERROR: $sql, ".print_r($this->dbh->lastErrorMsg(),true));
-		$count = $his->dbh->changes();
-		if ($count == 0) die("ERROR: Record not added! $sql");
-		return $this->dbh->lastInsertRowID();
+// 		$count = $this->dbh->changes();
+// 		if ($count == 0) die("ERROR: Record not added! $sql");
+		$id = $this->dbh->lastInsertRowID();
+		$pdir = substr($hash,0,2);
+		if (!file_exists($this->adir.$pdir))
+		{
+			mkdir($this->adir.$pdir);
+		}
+		$fp = fopen($this->adir.$pdir."/".$hash,"wb");
+		fwrite($fp,$raw_file);
+		fclose($fp);
+		
+		return $id;
 	}
 
 	public function deleteAttachment ($id)
 	{
+		$sql = "select file_hash from bt_attachments where id=".intval($id);
+		$hash = $this->dbh->querySingle($sql);
+		$sql = "select count(*) from bt_attachments where file_hash=(select file_hash from bt_attachments where id=".intval($id).")";
+		$count = $this->dbh->querySingle($sql);
 		$sql = "delete from bt_attachments where id=".intval($id);
-		$count = $this->dbh->exec($sql);
-		if (!$count) die("SQL ERROR: $sql, ".print_r($this->dbh->lastErrorMsg(),true));
+		$count2 = $this->dbh->exec($sql);
+		if (!$count2) die("SQL ERROR: $sql, ".print_r($this->dbh->lastErrorMsg(),true));
+		if ($count == 1)
+		{
+			$pdir = substr($hash,0,2);
+			unlink($this->adir.$pdir."/".$hash);
+		}
 	}
 
 	public function getHandle ()
 	{
 		return $this->dbh;
 	}
+
+	public function getAdir ()
+	{
+		return $this->adir;
+	}
+
 } // end class BugTrack
 ?>

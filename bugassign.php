@@ -1,13 +1,15 @@
 <?php
 // bugassign.php
 // Ron Patterson, WildDog Design
-// PDO version
-require("../session.php");
+// SQLite version
+require("btsession.php");
 # bugassign.php
 # Ron Patterson
 #print_r($_SESSION);
 // connect to the database 
-require("dbdefpdo.php");
+require_once("dbdef.php");
+require("BugTrack.class.php");
+$db = new BugTrack($dbpath);
 $ttl="BugTrack Assignment Search";
 require("bugcommon.php");
 $id=intval($_GET["id"]);
@@ -20,20 +22,20 @@ $id=intval($_GET["id"]);
 	<title>BugTrack Assignment Search</title>
 	<meta name="author" content="Ron Patterson, ASD20">
 	<link type="text/css" rel="stylesheet" href="bugtrack.css" title="bt styles">
-	<script type="text/javascript" src="../jquery.js"></script>
+	<script type="text/javascript" src="/lib/scripts/DataTables/media/js/jquery.js"></script>
 	<script type="text/javascript" src="fieldedits.js"></script>
 </head>
 <body background="" bgcolor="white" onload="document.form1.lname.focus();">
 <div class="bugform">
 	<table align="center">
 	<tr><td><img src="BugTrack.gif" alt="BugTrack"></td><td width="30">&nbsp;</td>
-	<td valign="middle"><font size="+1"><b><? echo $ttl; ?></b></font></td></tr>
+	<td valign="middle"><font size="+1"><b><?php echo $ttl; ?></b></font></td></tr>
 	</table><br>
 
-<form name="form9" id="form9" enctype="x-www-form-encoded">
+<form name="bt_form9" id="bt_form9" enctype="x-www-form-encoded">
 <h5>You can search on any of the fields listed below. The more
 information you fill in, the narrower the search becomes.
-<input type="hidden" name="id" value="<? echo $id; ?>"></h5>
+<input type="hidden" name="id" value="<?php echo $id; ?>"></h5>
 
 <fieldset>
 	<legend>BugTrack Assignment Search</legend>

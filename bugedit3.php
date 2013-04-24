@@ -1,8 +1,8 @@
 <?php
 // bugedit3.php
 // Ron Patterson, WildDog Design
-// PDO version
-//require("../session.php");
+// SQLite version
+#require("btsession.php");
 #print_r($_SESSION);
 $entry_id=12444; $ename="Ron Patterson";
 

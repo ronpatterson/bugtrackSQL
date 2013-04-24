@@ -1,7 +1,7 @@
 <?php
 // bugedit4.php
 // Ron Patterson, WildDog Design
-// PDO version
+// SQLite version
 // connect to the database 
 require_once("bugcommon.php");
 

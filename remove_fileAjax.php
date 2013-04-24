@@ -4,7 +4,7 @@
 // Ron Patterson, WildDog Design
 // PDO version
 
-require("../session.php");
+require("btsession.php");
 
 extract($_POST);
 #echo "Date: $mtg_dt, type: $mtg_type";
@@ -12,10 +12,10 @@ extract($_POST);
 $filelink = 1;
 $fileedit = 1;
 
-require("bugcommon.php");
+require("dbdef.php");
 require("BugTrack.class.php");
 
-$bug = new BugTrack();
+$bug = new BugTrack($dbpath);
 
 # attachments are now in the db
 $bug->deleteAttachment($id);

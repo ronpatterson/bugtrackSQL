@@ -1,8 +1,9 @@
 <?php
 ini_set("display_errors", "on");
 require_once("btsession.php");
-# bugtrack_ctlr.php - BugTrack controller
-# Ron Patterson
+// bugtrack_ctlr.php - BugTrack controller
+// Ron Patterson
+// SQLite version
 if ($_SESSION['user_id']=="") {
 	die("<html><b>Not logged in!!<p><a href=login.php>Login</a></b></html>");
 }

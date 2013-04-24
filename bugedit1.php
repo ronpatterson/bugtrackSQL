@@ -1,8 +1,8 @@
 <?php
 // bugedit1.php
 // Ron Patterson, WildDog Design
-// PDO version
-//require("../session.php");
+// SQLite version
+#require("btsession.php");
 #print_r($_POST); exit;
 // connect to the database 
 require("bugcommon.php");
