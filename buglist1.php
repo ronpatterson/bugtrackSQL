@@ -86,7 +86,7 @@ if ($type == "unassigned") {
 $crit .= " and status='".substr($otype,0,1)."'";
 // execute query 
 $sql = "select count(*) from bt_bugs where 1=1 $crit";
-echo $sql;
+#echo $sql;
 $count = $dbh->querySingle($sql);
 //echo $count;
 $cnt2=0; $out="";
