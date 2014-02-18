@@ -43,6 +43,9 @@ switch ($args["action"])
 	case "worklog_add":
 		require_once("bugedit4.php");
 		break;
+	case "email_bug":
+		require_once("bugsend1.php");
+		break;
 	case "help":
 		require_once("bughelp.php");
 		break;

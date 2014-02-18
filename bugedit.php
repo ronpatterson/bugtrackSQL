@@ -120,7 +120,7 @@ $btypes=retselect2($dbh,"bug_type","bt_type",$bug_type);
 $pri=retselectarray('priority',$parr,$priority);
 //$grp=retselectarray('group',$grparr,$group);
 ?>
-<div style="text-align: left; width: 600px;">
+<div style="text-align: left; width: 580px;">
 <form name="bt_form1" id="bt_form1" method="post" enctype="multipart/form-data"><br>
 	<input type="hidden" name="action2" id="action2" value="<?php echo $action; ?>" />
 	<input type="hidden" name="id" id="id" value="<?php echo $id; ?>" />

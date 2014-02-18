@@ -50,7 +50,13 @@ $db = null;
 	<span id="bt_help_btn">Help</span>
 </div>
 <div id="content_div"></div>
-<div id="errors"></div>
 <!-- <a href=viewphp1.php><b>View PHP code modules</b></a--><p>
+</div>
 <?php require("footer.php"); ?>
+<div id="dialog-modal" title="Basic modal dialog" style="display: none;">
+	<div id="dialog-content">
+		<p>Adding the modal overlay screen makes the dialog look more prominent because it dims out the page content.</p>
+	</div>
+	<div id="errors"></div>
+</div>
 </html>

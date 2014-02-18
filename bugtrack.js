@@ -4,7 +4,7 @@
 
 var URL = 'bugtrack_ctlr.php';
 
-var bt =
+var bt = // setup the bt namespace
 {
 
 	buglist: function ( event, type )
@@ -60,7 +60,8 @@ var bt =
 			params,
 			function (response)
 			{
-				$('#content_div').html(response);
+				//$('#content_div').html(response);
+				bt.showDialog('BugTrack Add',response);
 				$('#errors').html('');
 	// 			$('#bdate').datepicker(
 	// 			{
@@ -69,7 +70,7 @@ var bt =
 	// 				changeYear: true
 	// 			});
 				$('#bt_form1').submit(bt.bughandler);
-				$('#cancel1').click(bt.buglist);
+				$('#cancel1').click(bt.cancelDialog);
 			}
 		);
 		return false;
@@ -84,7 +85,8 @@ var bt =
 			params,
 			function (response)
 			{
-				$('#content_div').html(response);
+				//$('#content_div').html(response);
+				bt.showDialog('BugTrack Edit '+id,response);
 				$('#errors').html('');
 	// 			$('#bdate').datepicker(
 	// 			{
@@ -93,7 +95,7 @@ var bt =
 	// 				changeYear: true
 	// 			});
 				$('#bt_form1').submit(bt.bughandler);
-				$('#cancel1').click(bt.buglist);
+				$('#cancel1').click(bt.cancelDialog);
 			}
 		);
 		return false;
@@ -107,7 +109,8 @@ var bt =
 			params,
 			function (response)
 			{
-				$('#content_div').html(response);
+				//$('#content_div').html(response);
+				bt.showDialog('BugTrack Entry '+id,response);
 			}
 		);
 		return false;
@@ -121,7 +124,7 @@ var bt =
 			params,
 			function (response)
 			{
-				$('#content_div').html(response);
+				bt.showDialog('BugTrack Help',response);
 			}
 		);
 		return false;
@@ -136,7 +139,7 @@ var bt =
 			return false;
 		}
 		var params = '&'+$('#bt_form1').serialize()+'&action=add_update';
-		alert('bughandler '+params);
+		//alert('bughandler '+params);
 		$.post(
 			URL,
 			params,
@@ -165,7 +168,7 @@ var bt =
 			{
 				if (/^SUCCESS/.test(response))
 				{
-					bt.buglist(event);
+					bt.cancelDialog(event);
 				}
 				else
 					$('#content_div').html(response);
@@ -181,10 +184,9 @@ var bt =
 			params,
 			function (response)
 			{
-				debugger;
 				$('#content_div').html(response);
 				$('#bt_form2').submit(bt.workloghandler);
-				$('#cancel2').click(bt.buglist);
+				$('#cancel2').click(bt.cancelDialog);
 			}
 		);
 		return false;
@@ -226,6 +228,21 @@ var bt =
 		return false;
 	},
 
+	email_bug: function (id) {
+		var params = "action=email_bug&id="+id;
+		$.post(
+			URL,
+			params,
+			function (response)
+			{
+				$('#content_div').html(response);
+				$('#bt_form3').submit(bt.workloghandler);
+				$('#cancel3').click(bt.cancelDialog);
+			}
+		);
+		return false;
+	},
+
 	validate: function ( )
 	{
 		var datere = /^[01][0-9]\/[0-3][0-9]\/(19|20)[0-9]{2}$/;
@@ -241,9 +258,28 @@ var bt =
 		return err;
 	},
 
-	bugadmin: function ( event ) {
-		$('#content_div').html('admin stuff');
+	bugadmin: function ( event )
+	{
+		bt.showDialog('BugTrack Admin','admin stuff');
 		return false;
+	},
+	
+	showDialog: function ( title, content )
+	{
+		//if ($('#dialog-modal').dialog) $('#dialog-modal').dialog('destroy');
+		if (content) $('#dialog-content').html(content);
+		$('#dialog-modal').dialog({
+		  width: 600,
+		  maxHeight: 700,
+		  modal: true,
+		  title: title
+		});
+	},
+	
+	cancelDialog: function ( event )
+	{
+		$('#dialog-modal').dialog('destroy');
+		bt.buglist();
 	}
 
 }
