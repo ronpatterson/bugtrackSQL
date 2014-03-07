@@ -1,5 +1,5 @@
 <?php
 define("USEDB","bt");
 define("DBNAME", "rpatter");
-$dbpath = "/usr/local/db/test.db";
+$dbpath = "/usr/local/db/bugtrack.db";
 ?>

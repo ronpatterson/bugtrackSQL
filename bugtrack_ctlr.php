@@ -46,6 +46,9 @@ switch ($args["action"])
 	case "email_bug":
 		require_once("bugsend1.php");
 		break;
+	case "admin":
+		require_once("bugadmin.php");
+		break;
 	case "help":
 		require_once("bughelp.php");
 		break;

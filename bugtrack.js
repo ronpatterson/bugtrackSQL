@@ -260,7 +260,30 @@ var bt = // setup the bt namespace
 
 	bugadmin: function ( event )
 	{
-		bt.showDialog('BugTrack Admin','admin stuff');
+		var params = "action=admin";
+		$.post(
+			URL,
+			params,
+			function (response)
+			{
+				bt.showDialog('BugTrack Admin',response);
+				$('#bt_admin_users').click(bt.bugadmin_users);
+			}
+		);
+		return false;
+	},
+	
+	bugadmin_users: function ( event )
+	{
+		var params = "action=admin_users";
+		$.post(
+			URL,
+			params,
+			function (response)
+			{
+				$('#bt_admin_content').html(response);
+			}
+		);
 		return false;
 	},
 	
@@ -272,7 +295,9 @@ var bt = // setup the bt namespace
 		  width: 600,
 		  maxHeight: 700,
 		  modal: true,
-		  title: title
+		  title: title,
+		  show: 'fade',
+		  hide: 'fade'
 		});
 	},
 	

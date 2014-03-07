@@ -21,7 +21,8 @@ create table bt_users (
 	lname			text,
 	fname			text,
 	email			text,
-	active			char(1)
+	active			char(1),
+	roles			text
 );
 
 create table bt_bugs (
