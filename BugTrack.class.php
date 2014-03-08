@@ -3,12 +3,13 @@
 //
 // Ron Patterson, WildDog Design/BPWC
 //
-// PDO version
+// SQLite version
 
 define("AUSERS","ron,janie");
-$sarr=array("o"=>"Open", "h"=>"Hold", "w"=>"Working", "t"=>"Testing", "c"=>"Closed");
+$sarr=array("o"=>"Open", "h"=>"Hold", "w"=>"Working", "y"=>"Awaiting Customer", "t"=>"Testing", "c"=>"Closed");
 $parr=array("1"=>"High","2"=>"Normal","3"=>"Low");
-$grparr=array("WDD"=>"WildDog Design");
+$rarr=array("admin","ro");
+$grparr=array("DOC"=>"Dept of Corrections","WDD"=>"WildDog Design");
 
 function q ($val) {
 	if (empty($val)) return "NULL";
@@ -330,6 +331,70 @@ END;
 			$pdir = substr($hash,0,2);
 			unlink($this->adir.$pdir."/".$hash);
 		}
+	}
+
+	public function getUserEntries ()
+	{
+		$sql = "select count(*) from bt_users";
+		$found = $this->dbh->querySingle($sql);
+		if ($found == 0) return array(); // empty record!
+		//$sql = "select *,date_format(entry_dtm,'%d-%b-%Y %l:%i %p') edtm from bt_worklog where bug_id=".intval($id)." order by entry_dtm desc";
+		$sql = "select * from bt_users order by lname,fname";
+		$stmt = $this->dbh->query($sql);
+		if (!$stmt) die("SQL ERROR: $sql, ".print_r($this->dbh->lastErrorMsg(),true));
+		$results = array();
+		while ($row = $stmt->fetchArray())
+		{
+			$results[] = $row;
+		}
+		return $results;
+	}
+
+	public function getUserRec ($uid)
+	{
+		$sql = "select * from bt_users where uid=?";
+		$stmt = $this->dbh->prepare($sql);
+		if (!$stmt) die("SQL ERROR: $sql, ".print_r($this->dbh->lastErrorMsg(),true));
+		$stmt->bindValue(1,$uid);
+		$result = $stmt->execute();
+		if (!$result) die("SQL ERROR: $sql, ".print_r($this->dbh->lastErrorMsg(),true));
+		$results = array();
+		while ($row = $result->fetchArray())
+		{
+			$results[] = $row;
+		}
+		return $results;
+	}
+
+	// rec = record array
+	public function addUser ($rec)
+	{
+		// uid, lname, fname, email, active, roles
+		extract($rec);
+		$sql = "insert into bt_worklog (uid, lname, fname, email, active, roles) values (?,?,?,?,?,?)";
+		$stmt = $this->dbh->prepare($sql);
+		$params = array($uid, $lname, $fname, $email, $active, $roles);
+		for ($i=0; $i<count($params); ++$i) $stmt->bindValue($i+1,$params[$i]);
+		$result = $stmt->execute();
+		if ($result === FALSE) die("SQL ERROR: $sql, ".print_r($this->dbh->lastErrorMsg(),true));
+		$count = $this->dbh->changes();
+		if ($count == 0) die("ERROR: Record not added! $sql");
+		return $this->dbh->lastInsertRowID();
+	}
+
+	// uid = record key
+	// rec = record array
+	public function updateUser ($uid, $rec)
+	{
+		extract($rec);
+		$sql = "update bt_worklog set lname=?, fname=?, email=?, active=?, roles=? where uid=?";
+		$stmt = $this->dbh->prepare($sql);
+		$params = array($lname, $fname, $email, $active, $roles, $uid);
+		for ($i=0; $i<count($params); ++$i) $stmt->bindValue($i+1,$params[$i]);
+		$result = $stmt->execute();
+		if ($result === FALSE) die("SQL ERROR: $sql, ".print_r($this->dbh->lastErrorMsg(),true));
+		$count = $this->dbh->changes();
+		if ($count == 0) die("ERROR: Record not updated! $sql");
 	}
 
 	public function getHandle ()

@@ -49,6 +49,15 @@ switch ($args["action"])
 	case "admin":
 		require_once("bugadmin.php");
 		break;
+	case "admin_users":
+		$recs = $db->getUserEntries();
+		require_once("bugadmin1.php");
+		break;
+	case "bt_user_show":
+		$recs = $db->getUserRec($args["uid"]);
+		$rec = $recs[0];
+		require_once("bugadmin2.php");
+		break;
 	case "help":
 		require_once("bughelp.php");
 		break;

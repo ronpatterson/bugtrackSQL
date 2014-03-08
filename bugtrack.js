@@ -287,6 +287,21 @@ var bt = // setup the bt namespace
 		return false;
 	},
 	
+	user_show: function ( uid )
+	{
+		var params = "action=bt_user_show";
+		params += '&uid='+uid;
+		$.post(
+			URL,
+			params,
+			function (response)
+			{
+				$('#bt_admin_content').html(response);
+			}
+		);
+		return false;
+	},
+	
 	showDialog: function ( title, content )
 	{
 		//if ($('#dialog-modal').dialog) $('#dialog-modal').dialog('destroy');
