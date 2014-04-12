@@ -4,9 +4,9 @@ require_once("btsession.php");
 // bugtrack_ctlr.php - BugTrack controller
 // Ron Patterson
 // SQLite version
-if ($_SESSION['user_id']=="") {
-	die("<html><b>Not logged in!!<p><a href=login.php>Login</a></b></html>");
-}
+// if ($_SESSION['user_id']=="") {
+// 	die("<html><b>Not logged in!!<p><a href=login.php>Login</a></b></html>");
+// }
 // connect to the database 
 require_once("dbdef.php");
 require("BugTrack.class.php");
@@ -15,6 +15,17 @@ $db = new BugTrack($dbpath);
 $args = $_POST;
 switch ($args["action"])
 {
+	case "bt_check_session":
+		echo $db->check_session();
+		break;
+	case "bt_login_handler":
+		echo $db->login_session($args["uid"],$args["pw"]);
+		//print_r($_SESSION);
+		break;
+	case "bt_logout_handler":
+		$_SESSION["user_id"] = "";
+		//print_r($_SESSION);
+		break;
 	case "list":
 		require_once("buglist.php");
 		break;
@@ -43,6 +54,9 @@ switch ($args["action"])
 	case "worklog_add":
 		require_once("bugedit4.php");
 		break;
+	case "get_module":
+		echo file_get_contents($args["file"]);
+		break;
 	case "email_bug":
 		require_once("bugsend1.php");
 		break;
@@ -54,9 +68,19 @@ switch ($args["action"])
 		require_once("bugadmin1.php");
 		break;
 	case "bt_user_show":
-		$recs = $db->getUserRec($args["uid"]);
-		$rec = $recs[0];
+		if ($args["uid"] != "")
+		{
+			$recs = $db->getUserRec($args["uid"]);
+			$rec = $recs[0];
+		}
+		else
+		{
+			$rec = "";
+		}
 		require_once("bugadmin2.php");
+		break;
+	case "user_add_update":
+		require_once("bugadmin3.php");
 		break;
 	case "help":
 		require_once("bughelp.php");

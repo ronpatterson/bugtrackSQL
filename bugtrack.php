@@ -4,14 +4,15 @@ require_once("btsession.php");
 // bugtrack.php - BugTrack main
 // Ron Patterson
 // SQLite version
-if ($_SESSION['user_id']=="") {
-	die("<html><b>Not logged in!!<p><a href=login.php>Login</a></b></html>");
-}
+// if ($_SESSION['user_id']=="") {
+// 	die("<html><b>Not logged in!!<p><a href=login.php>Login</a></b></html>");
+// }
 // connect to the database 
 require_once("dbdef.php");
 require("BugTrack.class.php");
 $db = new BugTrack($dbpath);
 $ttl = "BugTrack";
+$uname = (isset($_SESSION["user_nm"])) ? $_SESSION["user_nm"] : "";
 ?>
 <html>
 <head>
@@ -59,4 +60,17 @@ $db = null;
 	</div>
 	<div id="errors"></div>
 </div>
+<div id="dialog-login" title="Basic modal dialog" style="text-align: center; display: none;">
+	<div id="login-content">
+		<form name="bt_login_form" id="bt_login_form">
+		<p>You are not logged in.</p>
+		User name<br><input type="text" name="uid"><br>
+		Password<br><input type="password" name="pw"><br>
+		<input type="submit" value="Login">
+		</form>
+	</div>
+	<div id="login_errors"></div>
+</div>
+<div id="bt_user_heading" style="position: absolute; width: 30em; top: 15px; right: 1em; text-align: right; font-size: 9pt; display: none;">Welcome <span id="bt_user_name_top"><?php echo $uname ?></span> <a href="#" onclick="return bt.logout_handler();">Logout</a></div>
+</body>
 </html>

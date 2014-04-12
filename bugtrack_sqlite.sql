@@ -22,7 +22,9 @@ create table bt_users (
 	fname			text,
 	email			text,
 	active			char(1),
-	roles			text
+	roles			text,
+	pw				text,
+	bt_group		text
 );
 
 create table bt_bugs (
@@ -47,6 +49,7 @@ create table bt_worklog (
 	bug_id			integer, -- references bt_bugs,
 	user_nm			text, -- new 10/13/06
 	comments		text,
+	wl_public		char(1), -- y/n
 	entry_dtm		datetime
 );
 create index bt_bid_idx on bt_worklog(bug_id);
@@ -80,8 +83,9 @@ insert into bt_type values ('z','Mobile/Palm/Pocket PC issue','y');
 insert into bt_type values ('u','Unknown issue','y');
 insert into bt_type values ('e','Enhancement','y');
 
-insert into bt_groups values ("GC","Generic Company","y");
-insert into bt_groups values ("WDD","WildDog Design","y");
+insert into bt_groups values ('GC','Generic Company','y');
+insert into bt_groups values ('WDD','WildDog Design','y');
+insert into bt_groups values ('DOC','Dept of Corrections','y');
 
-insert into bt_users values ("rlpatter","Patterson","Ron","ronlpatterson@me.com","y");
-insert into bt_users values ("admin","Administrator","BugTrack","ronlpatterson@me.com","y");
+insert into bt_users values ('rlpatter','Patterson','Ron','ronlpatterson@me.com','y','admin','');
+insert into bt_users values ('admin','Administrator','BugTrack','ronlpatterson@me.com','y','admin','');

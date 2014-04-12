@@ -188,3 +188,7 @@ div#group,div#group2 {
 .required {
 	color: #f00;
 }
+
+.no-close .ui-dialog-titlebar-close {
+  display: none;
+}

@@ -3,9 +3,100 @@
 // Ron Patterson
 
 var URL = 'bugtrack_ctlr.php';
+var login_content = "";
 
 var bt = // setup the bt namespace
 {
+
+	check_session: function (event)
+	{
+		var params = "action=bt_check_session";
+		$.post(
+			URL,
+			params,
+			function (response)
+			{
+				if (response == 0)
+				{
+					bt.login_form();
+				}
+				else
+				{
+					$('#bt_user_heading').show();
+				}
+			}
+		);
+		return false;
+	},
+	
+	login_form: function (event)
+	{
+		$('#bt_user_heading').hide();
+		$('#bt_login_form input[type="password"]').val('');
+		$('#dialog-login').dialog({
+		  width: 400,
+		  maxHeight: 700,
+		  modal: true,
+		  title: 'BugTrack Login',
+		  show: 'fade',
+		  hide: 'fade',
+		  draggable: false,
+		  resizeable: false,
+		  closeOnEscape: false,
+		  dialogClass: "no-close"
+		  //beforeClose: function( event, ui ) {return false;}
+		});
+		$('#bt_login_form').submit(bt.login_handler);
+		return false;
+	},
+	
+	login_handler: function (event)
+	{
+		var params = "action=bt_login_handler";
+		params += '&'+$('#bt_login_form').serialize();
+		$.post(
+			URL,
+			params,
+			function (response)
+			{
+				if (/FAIL/.test(response))
+				{
+					$('#login_errors').html(response);
+					return false;
+				}
+				else
+				{
+					var row = $.parseJSON(response);
+					$('#dialog-login').dialog('close');
+// 					var user = $('<div></div>')
+// 						.css('position','absolute')
+// 						.css('width','30em')
+// 						.css('top','15px')
+// 						.css('right','1em')
+// 						.css('text-align','right')
+// 						.css('font-size','9pt')
+// 						.html('Welcome '+row.fname+' '+'<a href="#" onclick="return bt.logout_handler();">Logout</a>');
+// 					$('body').append(user);
+					$('#bt_user_name_top').html(row.fname+' '+row.lname);
+					$('#bt_user_heading').show();
+				}
+			}
+		);
+		return false;
+	},
+	
+	logout_handler: function (event)
+	{
+		var params = "action=bt_logout_handler";
+		$.post(
+			URL,
+			params,
+			function (response)
+			{}
+		);
+		bt.check_session();
+		return false;
+	},
 
 	buglist: function ( event, type )
 	{
@@ -184,9 +275,12 @@ var bt = // setup the bt namespace
 			params,
 			function (response)
 			{
-				$('#content_div').html(response);
+				bt.showDialog('BugTrack Worklog',response);
 				$('#bt_form2').submit(bt.workloghandler);
-				$('#cancel2').click(bt.cancelDialog);
+				$('#cancel2').click(function(event)
+				{
+					bt.bugshow(event,id);
+				});
 			}
 		);
 		return false;
@@ -201,6 +295,7 @@ var bt = // setup the bt namespace
 			$('#message').html('Errors encountered:<br>'+err);
 			return false;
 		}
+		var id = $('#bt_form2 input[name="id"]').val();
 		var params = '&'+$('#bt_form2').serialize()+'&action=worklog_add';
 		//alert('workloghandler '+params);
 		$.post(
@@ -211,11 +306,11 @@ var bt = // setup the bt namespace
 				if (/^SUCCESS/.test(response))
 				{
 					//var id = response.replace(/^SUCCESS /,'');
-					var id = $('#id').val();
+					//var id = $('#id').val();
 					bt.bugshow(event,id);
 				}
 				else
-					$('#content_div').html(response);
+					$('#message').html(response);
 			}
 		);
 		return false;
@@ -268,6 +363,7 @@ var bt = // setup the bt namespace
 			{
 				bt.showDialog('BugTrack Admin',response);
 				$('#bt_admin_users').click(bt.bugadmin_users);
+				$('#bt_admin_users_add').click(bt.user_show);
 			}
 		);
 		return false;
@@ -282,26 +378,79 @@ var bt = // setup the bt namespace
 			function (response)
 			{
 				$('#bt_admin_content').html(response);
+				$('#bt_admin_errors').html('');
+				$('#bt_user_tbl').dataTable({
+					"aaSorting": [[ 0, "asc" ]]
+					//"bJQueryUI": true,
+					//"sPaginationType": "full_numbers"
+				});
 			}
 		);
 		return false;
 	},
 	
-	user_show: function ( uid )
+	user_show: function ( event, uid )
 	{
+		uid2 = !uid ? '' : uid;
 		var params = "action=bt_user_show";
-		params += '&uid='+uid;
+		params += '&uid='+uid2;
 		$.post(
 			URL,
 			params,
 			function (response)
 			{
 				$('#bt_admin_content').html(response);
+				$('#bt_user_form_id').submit(bt.userhandler);
 			}
 		);
 		return false;
 	},
 	
+	userhandler: function( event ) {
+		//alert('userhandler');
+		var emailre = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,6})+$/;
+// 		var err = bt.validate();
+		var err = '';
+		if (emailre.test($('#email').val()))
+			err += ' - Email is not valid<br>';
+		if (err != '')
+		{
+			$('#errors').html('Errors encountered:<br>'+err);
+			return false;
+		}
+		var params = 'action=user_add_update';
+		params += '&'+$('#bt_user_form_id').serialize();
+		//alert('userhandler '+params);
+		$.post(
+			URL,
+			params,
+			function (response)
+			{
+				if (/^SUCCESS/.test(response))
+				{
+					var id = response.replace(/^SUCCESS /,'');
+					bt.bugadmin_users(event);
+					$('#bt_admin_errors').html('');
+				}
+				else
+					$('#bt_admin_errors').html(response);
+			}
+		);
+		return false;
+	},
+	
+	assign_locate: function ( file )
+	{
+		$.get(
+			file,
+			function (response)
+			{
+				bt.showDialog('BugTrack Maintenance',response);
+			}
+		);
+		return false;
+	},
+
 	showDialog: function ( title, content )
 	{
 		//if ($('#dialog-modal').dialog) $('#dialog-modal').dialog('destroy');
@@ -324,6 +473,8 @@ var bt = // setup the bt namespace
 
 }
 
+var stimer = window.setInterval(bt.check_session,300000);
+
 $(function ()
 {
 	$('#bt_refresh_btn').button();
@@ -334,5 +485,8 @@ $(function ()
 	$('#bt_admin_btn').click(bt.bugadmin);
 	$('#bt_help_btn').button();
 	$('#bt_help_btn').click(bt.bughelp);
+	//login_content = $('#login_content').html();
+	//$('#login_content').html('');
+	bt.check_session();
 	//bt.buglist();
 });

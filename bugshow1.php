@@ -46,6 +46,7 @@ if ($assigned_to != "") {
 } else $aname="";
 $alink = ""; $elink = "";
 //if (ereg($_SESSION["uname"],AUSERS)) {
+//	$alink = "<a href='#' onclick='return bt.assign_locate(\"bugassign.php?id=$id\")'>Assign</a>";
 	$alink = "<a href='#' onclick='return assign_locate($id)'>Assign</a>";
 	$elink = <<<END
 <a href="#" onclick="return bt.bugedit(event,$id);">Edit record</a>

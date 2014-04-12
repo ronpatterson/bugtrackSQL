@@ -28,11 +28,12 @@ if ($err != "") {
 // $product = slashem($product);
 // $comments = slashem($comments);
 // $solution = slashem($solution);
+$admin_emails = $db->get_admin_emails();
 if ($action2 == "add") {
 	$bid = $db->addBug($rec);
 // 	$descr = stripcslashes($descr);
 // 	$comments = stripcslashes($comments);
-	$headers = "From: BugTrack <info@wilddogdesign.com>\r\nCC: ron@wilddogdesign.com,janie@wilddogdesign.com";
+	$headers = "From: $from_email\r\nCC: $admin_emails";
 	$msg = "Hello,
 
 A new BugTrack entry was added by $ename.
@@ -55,7 +56,7 @@ Comments: $comments
 // 		$descr = stripcslashes($descr);
 // 		$comments = stripcslashes($comments);
 // 		$solution = stripcslashes($solution);
-		$headers = "From: BugTrack <info@wilddogdesign.com>\r\nCC: ron@wilddogdesign.com,janie@wilddogdesign.com,$ebemail,$aemail";
+		$headers = "From: $from_email\r\nCC: $admin_emails,$ebemail,$aemail";
 		$msg = "Hello,
 
 BugTrack entry $bid status was changed by $uname.

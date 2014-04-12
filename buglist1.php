@@ -85,6 +85,8 @@ if ($type == "unassigned") {
 }
 if ($type == "undefined" and substr($otype,0,1)=='o')
 	$crit .= " and status<>'c'";
+elseif ($type == "assignments" or $type == "unassigned")
+	$crit .= " and status<>'c'";
 else
 	$crit .= " and status='".substr($otype,0,1)."'";
 // execute query 

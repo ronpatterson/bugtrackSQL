@@ -8,7 +8,7 @@
 define("AUSERS","ron,janie");
 $sarr=array("o"=>"Open", "h"=>"Hold", "w"=>"Working", "y"=>"Awaiting Customer", "t"=>"Testing", "c"=>"Closed");
 $parr=array("1"=>"High","2"=>"Normal","3"=>"Low");
-$rarr=array("admin","ro");
+$rarr=array("admin","ro","user");
 $grparr=array("DOC"=>"Dept of Corrections","WDD"=>"WildDog Design");
 
 function q ($val) {
@@ -207,9 +207,9 @@ END;
 	{
 		// id, bug_id, user_nm, comments, entry_dtm
 		extract($rec);
-		$sql = "insert into bt_worklog (bug_id, user_nm, comments, entry_dtm) values (?,?,?,datetime('now'))";
+		$sql = "insert into bt_worklog (bug_id, user_nm, comments, wl_public, entry_dtm) values (?,?,?,?,datetime('now'))";
 		$stmt = $this->dbh->prepare($sql);
-		$params = array($id,$usernm,$comments);
+		$params = array($id,$usernm,$comments,$wl_public);
 		for ($i=0; $i<count($params); ++$i) $stmt->bindValue($i+1,$params[$i]);
 		$result = $stmt->execute();
 		if ($result === FALSE) die("SQL ERROR: $sql, ".print_r($this->dbh->lastErrorMsg(),true));
@@ -223,9 +223,9 @@ END;
 	public function updateWorkLog ($idx, $rec)
 	{
 		extract($rec);
-		$sql = "update bt_worklog set user_nm=?,comments=? where id=?";
+		$sql = "update bt_worklog set user_nm=?,comments=?,wl_public=? where id=?";
 		$stmt = $this->dbh->prepare($sql);
-		$params = array($usernm,$comments,$idx);
+		$params = array($usernm,$comments,$wl_public,$idx);
 		for ($i=0; $i<count($params); ++$i) $stmt->bindValue($i+1,$params[$i]);
 		$result = $stmt->execute();
 		if ($result === FALSE) die("SQL ERROR: $sql, ".print_r($this->dbh->lastErrorMsg(),true));
@@ -371,9 +371,11 @@ END;
 	{
 		// uid, lname, fname, email, active, roles
 		extract($rec);
-		$sql = "insert into bt_worklog (uid, lname, fname, email, active, roles) values (?,?,?,?,?,?)";
+		$pw5 = md5($pw);
+		$roles = join(" ",$roles);
+		$sql = "insert into bt_users (uid, lname, fname, email, active, roles, pw, bt_group) values (?,?,?,?,?,?,?,?)";
 		$stmt = $this->dbh->prepare($sql);
-		$params = array($uid, $lname, $fname, $email, $active, $roles);
+		$params = array($uid2, $lname, $fname, $email, $active, $roles, $pw5, $bt_group);
 		for ($i=0; $i<count($params); ++$i) $stmt->bindValue($i+1,$params[$i]);
 		$result = $stmt->execute();
 		if ($result === FALSE) die("SQL ERROR: $sql, ".print_r($this->dbh->lastErrorMsg(),true));
@@ -387,14 +389,66 @@ END;
 	public function updateUser ($uid, $rec)
 	{
 		extract($rec);
-		$sql = "update bt_worklog set lname=?, fname=?, email=?, active=?, roles=? where uid=?";
+		if ($pw == $pw2) $pw5 = $pw;
+		else $pw5 = md5($pw);
+		$roles = join(" ",$roles);
+		$sql = "update bt_users set lname=?, fname=?, email=?, active=?, roles=?, pw=?, bt_group=? where uid=?";
 		$stmt = $this->dbh->prepare($sql);
-		$params = array($lname, $fname, $email, $active, $roles, $uid);
+		$params = array($lname, $fname, $email, $active, $roles, $pw5, $bt_group, $uid);
 		for ($i=0; $i<count($params); ++$i) $stmt->bindValue($i+1,$params[$i]);
 		$result = $stmt->execute();
 		if ($result === FALSE) die("SQL ERROR: $sql, ".print_r($this->dbh->lastErrorMsg(),true));
 		$count = $this->dbh->changes();
 		if ($count == 0) die("ERROR: Record not updated! $sql");
+	}
+	
+	public function get_admin_emails ()
+	{
+		$results = array();
+		$sql = "select email from bt_users where roles='admin'";
+		try
+		{
+			$stmt = $this->dbh->query($sql);
+			while ($row = $stmt->fetchArray())
+			{
+				$results[] = $row["email"];
+			}
+		}
+		catch (Exception $e)
+		{
+			die("SQL ERROR: $sql, ".$e->getMessage());
+		}
+		return join(",",$results);
+	}
+	
+	public function check_session ()
+	{
+		return (isset($_SESSION["user_id"]) and $_SESSION["user_id"] != "") ? 1 : 0;
+	}
+
+	public function login_session ( $uid, $pw )
+	{
+		$results = array();
+		$sql = "select * from bt_users where uid=? and pw=? and active='y'";
+		$stmt = $this->dbh->prepare($sql);
+		$params = array($uid,md5($pw));
+		#echo $sql;
+		#print_r($params);
+		for ($i=0; $i<count($params); ++$i) $stmt->bindValue($i+1,$params[$i]);
+		$result = $stmt->execute();
+		if ($result === FALSE) die("SQL ERROR: $sql, ".print_r($this->dbh->lastErrorMsg(),true));
+		while ($row = $result->fetchArray())
+		{
+			$results[] = $row;
+		}
+		if (empty($results)) die("FAIL");
+		$row = $results[0];
+		$_SESSION["user_id"] = $uid;
+		$_SESSION["user_nm"] = $row["fname"]." ".$row["lname"];
+		$_SESSION["email"] = $row["email"];
+		$_SESSION["roles"] = $row["roles"];
+		$_SESSION["group"] = $row["bt_group"];
+		echo json_encode($row);
 	}
 
 	public function getHandle ()

@@ -28,7 +28,8 @@ Comments: $comments
 ";
 	$to = $ebemail;
 	if ($to == "") $to = $email;
-	$headers = "From: BugTrack <info@wilddogdesign.com\r\nCC: ron@wilddogdesign.com,janie@wilddogdesign.com,$email,$aemail";
+	$admin_emails = $db->get_admin_emails();
+	$headers = "From: BugTrack <info@wilddogdesign.com\r\nCC: $admin_emails,$email,$aemail";
 	//mail($to,"BugTrack $bug_id worklog entry",stripcslashes($msg),$headers);
 } else {
 	$db->updateWorkLog($id,$rec);
@@ -36,3 +37,4 @@ Comments: $comments
 }
 //header("Location: bugshow1.php?id=$bid");
 ?>
+SUCCESS

@@ -12,6 +12,7 @@ $UsersArr = array(
 "guest"=>"3,User,Guest,webmaster@wilddogdesign.com"
 );
 
+$from_email = "BugTrack <cdocapps@state.co.us>";
 
 function repl($matches) {
 	$x=$matches[2];
@@ -114,6 +115,23 @@ function retselectarray ($name, $arr, $def) {
 		$out .= "<option value='$key'$chk>$val\n";
 	}
 	$out .= "</select>\n";
+	return $out;
+}
+
+# return a standard <input type=radio> for a lookup array
+function retradioarray ($name, $arr, $arrdef) {
+	reset($arr);
+	$out = "";
+	#if ($def == 0)
+	#	$out .= "<option value='0' selected>None\n";
+	#else
+	#	$out .= "<option value='0'>None\n";
+	while (list($key,$val) = each($arr))
+	{
+		$key = $val;
+		if (in_array($key,$arrdef)) $chk=" checked"; else $chk="";
+		$out .= "<label class=\"yesno\"><input type=\"radio\" name=\"$name\" value='$key'$chk>$val</label><br>\n";
+	}
 	return $out;
 }
 

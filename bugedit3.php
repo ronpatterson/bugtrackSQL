@@ -13,7 +13,7 @@ if ($id == "") {
 	exit;
 }
 // connect to the database 
-require("bugcommon.php");
+require_once("bugcommon.php");
 $dbh = $db->getHandle();
 
 $usernmx = $_SESSION["user_id"];
@@ -49,6 +49,8 @@ $but1="Add new Worklog entry";
 $ttl="Add Worklog Record";
 $bid="TBD";
 $wcomments="";
+$wl_public_y = " checked";
+$wl_public_n = "";
 #$dvd_title = ereg_replace("\"","\\&quot;",$dvd_title);
 ?>
 <div class="bugform">
@@ -72,6 +74,8 @@ $wcomments="";
 		<div class="fields2"><?php echo $descr; ?></div><br class="clear">
 		<label>Bug Comments:</label>
 		<div class="fields2"><?php echo nl2br(addlinks($comments)); ?></div><br class="clear">
+		<label>Public:</label>
+		<div class="fields2"><label class="yesno"><input type="radio" name="wl_public" value="y"<?php echo $wl_public_y ?>>Yes</label> <label class="yesno"><input type="radio" name="wl_public" value="n"<?php echo $wl_public_n ?>>No</label></div><br class="clear">
 		<label for="comments"><span class="required">*</span>Worklog Comments:</label>
 		<div class="fields2"><textarea name="comments" id="comments" rows="10" cols="40"
  wrap="virtual"></textarea></div><br class="clear">

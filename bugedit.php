@@ -23,14 +23,14 @@ function retselect2 ($dbh, $name, $tab, $def) {
 require("bugcommon.php");
 $dbh = $db->getHandle();
 
-// $usernm = $_SESSION["uname"];
+$usernm = $_SESSION["user_id"];
 // $arr = get_user($usernm);
-// $uname = "$arr[2] $arr[1]";
+$uname = $_SESSION["user_nm"];
 // $entry_id = $arr[0];
-// $email = $arr[3];
-$usernm = "admin";
-$uname = "BugTrack Administrator";
-$email = "ronlpatterson@me.com";
+$email = $_SESSION["email"];
+// $usernm = "admin";
+// $uname = "BugTrack Administrator";
+// $email = "ronlpatterson@me.com";
 #require("myhead1.php");
 $action = "change";
 extract($_POST);
@@ -42,7 +42,7 @@ if ($action == "add") {
 	$but1="Add new Bug entry";
 	$ttl="Add Record";
 	$bug_id="TBD";
-	$group="WDD";
+	$group=$_SESSION["group"];
 	$descr="";
 	$product = "";
 	$bug_type="";
