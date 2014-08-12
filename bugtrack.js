@@ -4,6 +4,7 @@
 
 var URL = 'bugtrack_ctlr.php';
 var login_content = "";
+var stimer = 0;
 
 var bt = // setup the bt namespace
 {
@@ -18,6 +19,8 @@ var bt = // setup the bt namespace
 			{
 				if (response == 0)
 				{
+					if (stimer != 0) window.clearInterval(stimer);
+					stimer = 0;
 					bt.login_form();
 				}
 				else
@@ -31,6 +34,8 @@ var bt = // setup the bt namespace
 	
 	login_form: function (event)
 	{
+		if (stimer != 0) window.clearInterval(stimer);
+		stimer = 0;
 		$('#bt_user_heading').hide();
 		$('#bt_login_form input[type="password"]').val('');
 		$('#dialog-login').dialog({
@@ -46,7 +51,9 @@ var bt = // setup the bt namespace
 		  dialogClass: "no-close"
 		  //beforeClose: function( event, ui ) {return false;}
 		});
+		$('#login_errors').html('');
 		$('#bt_login_form').submit(bt.login_handler);
+		$('input[name="uid"]').focus();
 		return false;
 	},
 	
@@ -79,6 +86,7 @@ var bt = // setup the bt namespace
 // 					$('body').append(user);
 					$('#bt_user_name_top').html(row.fname+' '+row.lname);
 					$('#bt_user_heading').show();
+					stimer = window.setInterval(bt.check_session,300000);
 				}
 			}
 		);
@@ -94,7 +102,7 @@ var bt = // setup the bt namespace
 			function (response)
 			{}
 		);
-		bt.check_session();
+		window.setTimeout(bt.check_session,1000); // a bit of a delay
 		return false;
 	},
 
@@ -471,9 +479,7 @@ var bt = // setup the bt namespace
 		bt.buglist();
 	}
 
-}
-
-var stimer = window.setInterval(bt.check_session,300000);
+} // end of bt namespace
 
 $(function ()
 {
@@ -485,6 +491,9 @@ $(function ()
 	$('#bt_admin_btn').click(bt.bugadmin);
 	$('#bt_help_btn').button();
 	$('#bt_help_btn').click(bt.bughelp);
+	$( document ).ajaxError(function(event, jqxhr, settings, thrownError) {
+		bt.showDialog( "ERROR!", "A error occurred during server call.<br>" . thrownError );
+	});
 	//login_content = $('#login_content').html();
 	//$('#login_content').html('');
 	bt.check_session();
