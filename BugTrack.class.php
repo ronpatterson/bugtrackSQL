@@ -147,6 +147,7 @@ END;
 	public function addBug ($rec)
 	{
 		extract($rec);
+		//error_log("rec=".print_r($rec,1));
 		$sql = "insert into bt_bugs (descr, product, user_nm, bug_type, status, priority, comments, solution, assigned_to, entry_dtm) values (?,?,?,?,?,?,?,?,?,datetime('now'))";
 		$stmt = $this->dbh->prepare($sql);
 		$params = array($descr,$product,$user_nm,$bug_type,$status,$priority,$comments,$solution,$assigned_to);
@@ -159,6 +160,7 @@ END;
 		$id = $this->dbh->lastInsertRowID();
 		$bug_id="$group$id";
 		$sql = "update bt_bugs set bug_id=? where id=?";
+		$stmt = $this->dbh->prepare($sql);
 		$params = array($bug_id,$id);
 		for ($i=0; $i<count($params); ++$i) $stmt->bindValue($i+1,$params[$i]);
 		$result = $stmt->execute();

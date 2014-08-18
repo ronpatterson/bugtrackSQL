@@ -127,8 +127,6 @@ $pri=retselectarray('priority',$parr,$priority);
 	<input type="hidden" name="bug_id" id="bug_id" value="<?php echo $bug_id; ?>" />
 	<input type="hidden" name="user_nm" id="user_nm" value="<?php echo $usernm; ?>">
 	<input type="hidden" name="email" id="email" value="<?php echo $email; ?>">
-	<input type="hidden" name="aemail" id="aemail" value="<?php echo $aemail; ?>">
-	<input type="hidden" name="ebemail" id="ebemail" value="<?php echo $ebemail; ?>">
 	<input type="hidden" name="ename" id="ename" value="<?php echo $ename; ?>">
 	<input type="hidden" name="uname" id="uname" value="<?php echo $uname; ?>">
 	<input type="hidden" name="oldstatus" id="oldstatus" value="<?php echo $status; ?>">
