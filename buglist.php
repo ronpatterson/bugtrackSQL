@@ -115,9 +115,11 @@ $stat=retselectarray('status',$sarr,"");
 
 //if ($start < $cnt) echo "<a href='buglist.php?start={$start}{$nextlink}'><b>Next -&gt;</b></a><p>\n";
 ?>
+<!--
 <p><a href="#" onclick="return bt.buglist(event,'<?php echo $otype; ?>');"><b>Show <?php echo $otype; ?> list</b></a>
 -- <a href="#" onclick="return bt.buglist(event,'assignments');"><b>Show my assignments</b></a>
 -- <a href="#" onclick="return bt.buglist(event,'unassigned');"><b>Show unassigned</b></a>
 </p>
+-->
 <!-- <a href=viewphp1.php><b>View PHP code modules</b></a-->
 </center>

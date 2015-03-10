@@ -7,7 +7,7 @@ require_once("btsession.php");
 // if ($_SESSION['user_id']=="") {
 // 	die("<html><b>Not logged in!!<p><a href=login.php>Login</a></b></html>");
 // }
-// connect to the database 
+// connect to the database
 require_once("dbdef.php");
 require("BugTrack.class.php");
 $db = new BugTrack($dbpath);

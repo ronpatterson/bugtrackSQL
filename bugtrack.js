@@ -2,25 +2,25 @@
 //
 // Ron Patterson
 
-var URL = 'bugtrack_ctlr.php';
-var login_content = "";
-var stimer = 0;
-
 var bt = // setup the bt namespace
 {
+
+	URL: 'bugtrack_ctlr2.php',
+	login_content: '',
+	stimer: 0,
 
 	check_session: function (event)
 	{
 		var params = "action=bt_check_session";
 		$.post(
-			URL,
+			bt.URL,
 			params,
 			function (response)
 			{
 				if (response == 0)
 				{
-					if (stimer != 0) window.clearInterval(stimer);
-					stimer = 0;
+					if (bt.stimer != 0) window.clearInterval(stimer);
+					bt.stimer = 0;
 					bt.login_form();
 				}
 				else
@@ -31,11 +31,11 @@ var bt = // setup the bt namespace
 		);
 		return false;
 	},
-	
+
 	login_form: function (event)
 	{
-		if (stimer != 0) window.clearInterval(stimer);
-		stimer = 0;
+		if (bt.stimer != 0) window.clearInterval(stimer);
+		bt.stimer = 0;
 		$('#bt_user_heading').hide();
 		$('#bt_login_form input[type="password"]').val('');
 		$('#dialog-login').dialog({
@@ -56,13 +56,13 @@ var bt = // setup the bt namespace
 		$('input[name="uid"]').focus();
 		return false;
 	},
-	
+
 	login_handler: function (event)
 	{
 		var params = "action=bt_login_handler";
 		params += '&'+$('#bt_login_form').serialize();
 		$.post(
-			URL,
+			bt.URL,
 			params,
 			function (response)
 			{
@@ -86,18 +86,18 @@ var bt = // setup the bt namespace
 // 					$('body').append(user);
 					$('#bt_user_name_top').html(row.fname+' '+row.lname);
 					$('#bt_user_heading').show();
-					stimer = window.setInterval(bt.check_session,300000);
+					bt.stimer = window.setInterval(bt.check_session,300000);
 				}
 			}
 		);
 		return false;
 	},
-	
+
 	logout_handler: function (event)
 	{
 		var params = "action=bt_logout_handler";
 		$.post(
-			URL,
+			bt.URL,
 			params,
 			function (response)
 			{}
@@ -110,7 +110,7 @@ var bt = // setup the bt namespace
 	{
 		var params = "action=list&type="+type;
 		$.post(
-			URL,
+			bt.URL,
 			params,
 			function (response)
 			{
@@ -123,8 +123,9 @@ var bt = // setup the bt namespace
 				{
 					sel_val = $('#status').val();
 				}
-				$('#content_div').html(response);
-				bt.buglist2(event, type, sel_val);
+				//$('#content_div').html(response);
+				//bt.buglist2(event, type, sel_val);
+				bt.buglist_build(response);
 			}
 		);
 		return false;
@@ -136,7 +137,7 @@ var bt = // setup the bt namespace
 		params += '&type='+type;
 		params += '&sel_arg='+sel_arg;
 		$.post(
-			URL,
+			bt.URL,
 			params,
 			function (response)
 			{
@@ -151,11 +152,28 @@ var bt = // setup the bt namespace
 		return false;
 	},
 
+	buglist_build: function ( data )
+	{
+		$('#bt_tbl tbody').empty();
+		for (var i=0; i<data.length; ++i)
+		{
+			var row = data[i];
+			var tr =
+'<tr valign="top">' +
+'<td><a href="#" onclick="return bt.bugshow(null,'+row.id+');"><b>'+row.bug_id+'</b></a></td>' +
+'<td>'+row.descr+'</td>' +
+'<td>'+row.entry_dt+'</td>' +
+'<td>'+row.status+'</td>' +
+'</tr>\n';
+			$('#bt_tbl tbody').append(tr);
+		}
+	},
+
 	bugadd: function ( event )
 	{
 		var params = "action=add";
 		$.post(
-			URL,
+			bt.URL,
 			params,
 			function (response)
 			{
@@ -180,7 +198,7 @@ var bt = // setup the bt namespace
 		//alert('bugedit '+id);
 		var params = "action=edit&id="+id;
 		$.post(
-			URL,
+			bt.URL,
 			params,
 			function (response)
 			{
@@ -204,7 +222,7 @@ var bt = // setup the bt namespace
 	{
 		var params = "action=show&id="+id;
 		$.post(
-			URL,
+			bt.URL,
 			params,
 			function (response)
 			{
@@ -219,7 +237,7 @@ var bt = // setup the bt namespace
 	{
 		var params = "action=help";
 		$.post(
-			URL,
+			bt.URL,
 			params,
 			function (response)
 			{
@@ -240,7 +258,7 @@ var bt = // setup the bt namespace
 		var params = '&'+$('#bt_form1').serialize()+'&action=add_update';
 		//alert('bughandler '+params);
 		$.post(
-			URL,
+			bt.URL,
 			params,
 			function (response)
 			{
@@ -261,7 +279,7 @@ var bt = // setup the bt namespace
 		if (!confirm("Really delete this entry?")) return false;
 		var params = "action=delete&id="+id;
 		$.post(
-			URL,
+			bt.URL,
 			params,
 			function (response)
 			{
@@ -279,7 +297,7 @@ var bt = // setup the bt namespace
 	add_worklog: function ( event, id ) {
 		var params = "action=add_worklog&id="+id;
 		$.post(
-			URL,
+			bt.URL,
 			params,
 			function (response)
 			{
@@ -307,7 +325,7 @@ var bt = // setup the bt namespace
 		var params = '&'+$('#bt_form2').serialize()+'&action=worklog_add';
 		//alert('workloghandler '+params);
 		$.post(
-			URL,
+			bt.URL,
 			params,
 			function (response)
 			{
@@ -334,7 +352,7 @@ var bt = // setup the bt namespace
 	email_bug: function (id) {
 		var params = "action=email_bug&id="+id;
 		$.post(
-			URL,
+			bt.URL,
 			params,
 			function (response)
 			{
@@ -365,7 +383,7 @@ var bt = // setup the bt namespace
 	{
 		var params = "action=admin";
 		$.post(
-			URL,
+			bt.URL,
 			params,
 			function (response)
 			{
@@ -376,12 +394,12 @@ var bt = // setup the bt namespace
 		);
 		return false;
 	},
-	
+
 	bugadmin_users: function ( event )
 	{
 		var params = "action=admin_users";
 		$.post(
-			URL,
+			bt.URL,
 			params,
 			function (response)
 			{
@@ -396,14 +414,14 @@ var bt = // setup the bt namespace
 		);
 		return false;
 	},
-	
+
 	user_show: function ( event, uid )
 	{
 		uid2 = !uid ? '' : uid;
 		var params = "action=bt_user_show";
 		params += '&uid='+uid2;
 		$.post(
-			URL,
+			bt.URL,
 			params,
 			function (response)
 			{
@@ -413,7 +431,7 @@ var bt = // setup the bt namespace
 		);
 		return false;
 	},
-	
+
 	userhandler: function( event ) {
 		//alert('userhandler');
 		var emailre = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,6})+$/;
@@ -430,7 +448,7 @@ var bt = // setup the bt namespace
 		params += '&'+$('#bt_user_form_id').serialize();
 		//alert('userhandler '+params);
 		$.post(
-			URL,
+			bt.URL,
 			params,
 			function (response)
 			{
@@ -446,7 +464,7 @@ var bt = // setup the bt namespace
 		);
 		return false;
 	},
-	
+
 	assign_locate: function ( file )
 	{
 		$.get(
@@ -472,7 +490,7 @@ var bt = // setup the bt namespace
 		  hide: 'fade'
 		});
 	},
-	
+
 	cancelDialog: function ( event )
 	{
 		$('#dialog-modal').dialog('destroy');
@@ -496,6 +514,6 @@ $(function ()
 	});
 	//login_content = $('#login_content').html();
 	//$('#login_content').html('');
-	bt.check_session();
+	//bt.check_session();
 	//bt.buglist();
 });

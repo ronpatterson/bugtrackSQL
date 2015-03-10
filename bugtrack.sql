@@ -41,9 +41,10 @@ create table bt_attachments (
 	bug_id			integer, -- references bt_bugs,
 	file_name		varchar(100),
 	file_size		varchar(30),
-	attachment		mediumblob,
+	file_hash		varchar(50),
 	entry_dtm		datetime
 );
+create index btatt_bid_idx on bt_attachments(bug_id);
 
 insert into bt_type values ('h','Hardware issue','y');
 insert into bt_type values ('s','Software issue','y');

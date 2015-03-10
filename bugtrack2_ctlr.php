@@ -7,15 +7,20 @@ require_once("btsession.php");
 // if ($_SESSION['user_id']=="") {
 // 	die("<html><b>Not logged in!!<p><a href=login.php>Login</a></b></html>");
 // }
-// connect to the database 
+date_default_timezone_set('America/Denver');
+// connect to the database
 require_once("dbdef.php");
 //require("BugTrack.class.php");
-require("BugTrackMongo.class.php");
+require("BugTrack2.class.php");
 $db = new BugTrack($dbpath);
 
 $args = $_POST;
 switch ($args["action"])
 {
+	case "bt_init":
+		$results = $db->getBTlookups();
+		echo $results;
+		break;
 	case "bt_check_session":
 		echo $db->check_session();
 		break;
@@ -31,17 +36,20 @@ switch ($args["action"])
 		require_once("buglist.php");
 		break;
 	case "list2":
-		require_once("buglist1.php");
+		//require_once("buglist1.php");
+		//$results = $db->getBugs($args["type"],$args["sel_arg"]);
+		$results = $db->getBugs();
+		echo $results;
 		break;
 	case "show":
-		require_once("bugshow1.php");
-		break;
 	case "add":
 	case "edit":
-		require_once("bugedit.php");
+		$results = $db->getBug($args["id"]);
+		echo $results;
 		break;
 	case "add_update":
-		require_once("bugedit1.php");
+		$results = $db->addUpdateBug($args);
+		echo $results;
 		break;
 	case "delete":
 		$sql = "delete from bt_bugsx where id=?";
@@ -66,19 +74,18 @@ switch ($args["action"])
 		break;
 	case "admin_users":
 		$recs = $db->getUserEntries();
-		require_once("bugadmin1.php");
+		echo $recs;
 		break;
 	case "bt_user_show":
 		if ($args["uid"] != "")
 		{
 			$recs = $db->getUserRec($args["uid"]);
-			$rec = $recs[0];
+			echo $recs;
 		}
 		else
 		{
 			$rec = "";
 		}
-		require_once("bugadmin2.php");
 		break;
 	case "user_add_update":
 		require_once("bugadmin3.php");
