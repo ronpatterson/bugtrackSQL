@@ -114,8 +114,9 @@ END;
 		// id, descr, product, user_nm, bug_type, status, priority, comments, solution, assigned_to, bug_id, entry_dtm, update_dtm, closed_dtm
 		$crit = is_numeric($id) ? " id=?" : " bug_id=?";
 		$sql = "
-select b.*,t.descr t_descr from bt_bugs b
-	inner join bt_type t on (t.cd=b.bug_type)
+select b.*,t.descr t_descr,trim(fname)||' '||trim(lname) aname,email from bt_bugs b
+	inner join bt_type t on (t.cd = b.bug_type)
+	left join bt_users u on (u.uid = b.assigned_to)
 where $crit
 ";
 		$stmt = $this->dbh->prepare($sql);
@@ -125,11 +126,14 @@ where $crit
 		if ($result === FALSE) die("SQL ERROR: $sql, ".print_r($this->dbh->lastErrorMsg(),true));
 		$row = $result->fetchArray($type);
 		$result->finalize();
-		$row["status_descr"] = $sarr[$row["status"]];
-		$row["priority_descr"] = $parr[$row["priority"]];
-		$row["edtm"] = $row["entry_dtm"] != "" ? date("m/d/Y g:i a",strtotime($row["entry_dtm"])) : "";
-		$row["udtm"] = $row["update_dtm"] != "" ? date("m/d/Y g:i a",strtotime($row["update_dtm"])) : "";
-		$row["cdtm"] = $row["closed_dtm"] != "" ? date("m/d/Y g:i a",strtotime($row["closed_dtm"])) : "";
+		if (is_array($row) and count($row) > 0)
+		{
+			$row["status_descr"] = $sarr[$row["status"]];
+			$row["priority_descr"] = $parr[$row["priority"]];
+			$row["edtm"] = $row["entry_dtm"] != "" ? date("m/d/Y g:i a",strtotime($row["entry_dtm"])) : "";
+			$row["udtm"] = $row["update_dtm"] != "" ? date("m/d/Y g:i a",strtotime($row["update_dtm"])) : "";
+			$row["cdtm"] = $row["closed_dtm"] != "" ? date("m/d/Y g:i a",strtotime($row["closed_dtm"])) : "";
+		}
 		return json_encode((object)$row);
 	}
 
@@ -159,7 +163,7 @@ where $crit
 	{
 		extract($rec);
 		//error_log("rec=".print_r($rec,1));
-		if ($bid == "") // add
+		if ($id == "") // add
 		{
 			$sql = "insert into bt_bugs (descr, product, user_nm, bug_type, status, priority, comments, solution, entry_dtm) values (?,?,?,?,?,?,?,?,datetime('now','localtime'))";
 			$stmt = $this->dbh->prepare($sql);
@@ -191,13 +195,12 @@ where $crit
 			$sql .= ",update_dtm=datetime('now','localtime')";
 			$sql .= " where id=?";
 			$stmt = $this->dbh->prepare($sql);
-			$params = array($descr,$product,$bug_type,$status,$priority,$comments,$solution,$bid);
+			$params = array($descr,$product,$bug_type,$status,$priority,$comments,$solution,$id);
 			for ($i=0; $i<count($params); ++$i) $stmt->bindValue($i+1,$params[$i]);
 			$result = $stmt->execute();
 			if ($result === FALSE) die("SQL ERROR: $sql, ".print_r($this->dbh->lastErrorMsg(),true));
 			$count = $this->dbh->changes();
 			if ($count == 0) die("ERROR: Record not updated! $sql");
-			$id = $bid;
 		}
 		return "SUCCESS ".$id;
 	}
@@ -213,6 +216,28 @@ where $crit
 		$sql = "delete from bt_bugs where id=".intval($id);
 		$count = $this->dbh->exec($sql);
 		if (!$count) die("SQL ERROR: $sql, ".print_r($this->dbh->lastErrorMsg(),true));
+		return "SUCCESS";
+	}
+
+	public function get_worklog_entries ($id)
+	{
+		$sql = "
+select * from bt_worklog w
+where bug_id = ?
+order by entry_dtm desc
+";
+		$stmt = $this->dbh->prepare($sql);
+		$params = array($id);
+		for ($i=0; $i<count($params); ++$i) $stmt->bindValue($i+1,$params[$i]);
+		$result = $stmt->execute();
+		if ($result === FALSE) die("SQL ERROR: $sql, ".print_r($this->dbh->lastErrorMsg(),true));
+		$results = array();
+		while ($row = $result->fetchArray(SQLITE3_ASSOC))
+		{
+			$row["entry_dtm"] = $row["entry_dtm"] != "" ? date("m/d/Y g:i a",strtotime($row["entry_dtm"])) : "";
+			$results[] = (object)$row;
+		}
+		return json_encode($results);
 	}
 
 	// rec = record array
@@ -222,13 +247,13 @@ where $crit
 		extract($rec);
 		$sql = "insert into bt_worklog (bug_id, user_nm, comments, wl_public, entry_dtm) values (?,?,?,?,datetime('now','localtime'))";
 		$stmt = $this->dbh->prepare($sql);
-		$params = array($id,$usernm,$comments,$wl_public);
+		$params = array($id,$usernm,$wl_comments,$wl_public);
 		for ($i=0; $i<count($params); ++$i) $stmt->bindValue($i+1,$params[$i]);
 		$result = $stmt->execute();
 		if ($result === FALSE) die("SQL ERROR: $sql, ".print_r($this->dbh->lastErrorMsg(),true));
 		$count = $this->dbh->changes();
 		if ($count == 0) die("ERROR: Record not added! $sql");
-		return $this->dbh->lastInsertRowID();
+		return "SUCCESS ".$this->dbh->lastInsertRowID();
 	}
 
 	// idx = record index
@@ -265,6 +290,7 @@ where $crit
 		$results = array();
 		while ($row = $stmt->fetchArray(SQLITE3_ASSOC))
 		{
+			$row["edtm"] = date("m/d/Y G:i",strtotime($row["entry_dtm"]));
 			$results[] = $row;
 		}
 		return $results;
@@ -272,33 +298,28 @@ where $crit
 
 	public function getBugAttachment ($id, $type = SQLITE3_ASSOC)
 	{
-		$sql = "select count(*) from bt_attachments where id=".intval($id);
-		$found = $this->dbh->querySingle($sql);
-		if ($found == 0) return array(); // empty record!
 		$sql = "select * from bt_attachments where id=".intval($id);
 		$stmt = $this->dbh->query($sql);
 		if (!$stmt) die("SQL ERROR: $sql, ".print_r($this->dbh->lastErrorMsg(),true));
 		$results = array();
 		while ($row = $stmt->fetchArray($type))
 		{
-			$results[] = $row;
+			$results[] = (object)$row;
 		}
 		return $results;
 	}
 
-	public function getBugAttachments ($id) {
-		$sql = "select count(*) from bt_attachments where bug_id=".intval($id);
-		$found = $this->dbh->querySingle($sql);
-		if ($found == 0) return array(); // empty record!
+	public function getBugAttachments ($id)
+	{
 		$sql = "select id,file_name,file_size from bt_attachments where bug_id=".intval($id);
 		$stmt = $this->dbh->query($sql);
 		if (!$stmt) die("SQL ERROR: $sql, ".print_r($this->dbh->lastErrorMsg(),true));
 		$results = array();
 		while ($row = $stmt->fetchArray(SQLITE3_ASSOC))
 		{
-			$results[] = $row;
+			$results[] = (object)$row;
 		}
-		return $results;
+		return json_encode($results);
 	}
 
 	// rec = record array
@@ -358,6 +379,51 @@ where $crit
 		}
 		$results = array("data"=>$results);
 		return json_encode($results);
+	}
+
+	public function getUsersSearch ( $args )
+	{
+		$crit = "1=1";
+		if (trim($args["lname"]) != "")
+		{
+			$crit .= " and lname like ?";
+			$params[] = $args["lname"]."%";
+		}
+		if (trim($args["fname"]) != "")
+		{
+			$crit .= " and fname like ?";
+			$params[] = $args["fname"]."%";
+		}
+		$sql = "
+select uid,lname||', '||fname,email,roles,case active when 'y' then 'Yes' else 'No' end active from bt_users
+where $crit
+order by lname,fname";
+		$stmt = $this->dbh->prepare($sql);
+		if (!$stmt) die("SQL ERROR: $sql, ".print_r($this->dbh->lastErrorMsg(),true));
+		for ($i=0; $i<count($params); ++$i) $stmt->bindValue($i+1,$params[$i]);
+		$result = $stmt->execute();
+		if ($result === FALSE) die("SQL ERROR: $sql, ".print_r($this->dbh->lastErrorMsg(),true));
+		$results = array();
+		while ($row = $result->fetchArray(SQLITE3_NUM))
+		{
+			$results[] = (object)$row;
+		}
+		$results = array("data"=>$results);
+		return json_encode($results);
+	}
+	
+	public function assign_user ( $args )
+	{
+		$params = array();
+		$params[] = $args["uid"];
+		$params[] = $args["id"];
+		$sql = "update bt_bugs set assigned_to = ? where bug_id = ?";
+		$stmt = $this->dbh->prepare($sql);
+		if (!$stmt) die("SQL ERROR: $sql, ".print_r($this->dbh->lastErrorMsg(),true));
+		for ($i=0; $i<count($params); ++$i) $stmt->bindValue($i+1,$params[$i]);
+		$result = $stmt->execute();
+		if ($result === FALSE) die("SQL ERROR: $sql, ".print_r($this->dbh->lastErrorMsg(),true));
+		return "SUCCESS";
 	}
 
 	public function getUserRec ($uid)
@@ -430,6 +496,77 @@ where $crit
 		}
 		return join(",",$results);
 	}
+	
+	public function do_bug_email ( $args )
+	{
+		global $sarr, $parr;
+		$rec = json_decode($this->getBug($args["id"]));
+		if (empty($rec)) die("ERROR: Bug not found ({$args["id"]})");
+		$bt = $this->getBugTypeDescr($rec->bug_type);
+		if ($rec->user_nm != "") {
+			$arr = $this->get_user($rec->user_nm);
+			$ename = "$arr[2] $arr[1]";
+			$email = $arr[3];
+		} else $ename="";
+		if ($rec->assigned_to != "") {
+			$arr = $this->get_user($rec->assigned_to);
+			$aname = "$arr[2] $arr[1]";
+			$aemail = $arr[3];
+		} else $aname="";
+		$msg = "$msg2
+
+Details of Bug ID {$rec->bug_id}.
+
+Description: {$rec->descr}
+Product or Application: {$rec->product}
+Bug Type: $bt
+Status: {$sarr[$rec->status]}
+Priority: {$parr[$rec->priority]}
+Comments: {$rec->comments}
+Solution: {$rec->solution}
+Entry By: $ename
+Assigned To: $aname
+Entry Date/Time: {$rec->edtm}
+Update Date/Time: {$rec->udtm}
+Closed Date/Time: {$rec->cdtm}
+
+";
+		$rows = $this->getWorkLogEntries($args["id"]);
+		$msg .= count($rows)." Worklog entries found
+
+";
+		if (count($rows) > 0) {
+			foreach ($rows as $row) {
+				//list($wid,$bid,$usernm,$comments,$entry_dtm,$edtm)=$row;
+				$o = (object)$row;
+				if ($o->user_nm != "") {
+					$arr = $this->get_user($o->user_nm);
+					$ename = "$arr[2] $arr[1]";
+				} else $ename="";
+				$comments = stripcslashes($o->comments);
+				$msg .= "Date/Time: {$o->edtm}, By: $ename
+Comments: $comments
+";
+			}
+		}
+		$sendto = $args["sendto"];
+		$cc = $args["cc"];
+		$subject = $args["subject"];
+		if (!preg_match("/@/",$sendto)) $sendto.="@wilddogdesign.com";
+		if ($cc != "" and !preg_match("/@/",$cc)) $cc.="@wilddogdesign.com";
+		if ($cc != "") $ccx="CC: $cc"; else $ccx="";
+		if (1) {
+		$msg = nl2br($msg);
+		return <<<END
+To: $sendto<br>
+Subject: $subject<br>
+Headers: $ccx<br>
+Content:<br>
+$msg
+END;
+		}
+		//mail($sendto,$subject,stripcslashes($msg),$ccx);
+	}
 
 	public function check_session ()
 	{
@@ -486,6 +623,16 @@ where $crit
 		$results["bt_status"] = $sarr;
 		$results["bt_priority"] = $parr;
 		return json_encode($results);
+	}
+
+	// determine user info
+	function get_user ($uname) {
+	//	global $UsersArr;
+		$sql = "select lname,fname,email from bt_users where uid='$uname'";
+		$stmt = $this->dbh->query($sql);
+		$arr = $stmt->fetchArray(SQLITE3_NUM);
+	//	return explode(",", $UsersArr[$uname]);
+		return $arr;
 	}
 
 	public function getHandle ()

@@ -41,6 +41,14 @@ switch ($args["action"])
 		$results = $db->getBugs();
 		echo $results;
 		break;
+	case "getUsersSearch":
+		$results = $db->getUsersSearch($args);
+		echo $results;
+		break;
+	case "assign_user":
+		$results = $db->assign_user($args);
+		echo $results;
+		break;
 	case "show":
 	case "add":
 	case "edit":
@@ -52,25 +60,27 @@ switch ($args["action"])
 		echo $results;
 		break;
 	case "delete":
-		$sql = "delete from bt_bugsx where id=?";
-		$result = $db->execute($sql,array($args["id"]));
-		if ($result) echo "SUCCESS";
-		die("ERROR: Delete failed!");
+		$results = $db->deleteBug($args["id"]);
+		echo $results;
 		break;
-	case "add_worklog":
-		require_once("bugedit3.php");
+	case "get_worklog_entries":
+		$results = $db->get_worklog_entries($args["id"]);
+		echo $results;
 		break;
 	case "worklog_add":
-		require_once("bugedit4.php");
+		$results = $db->addWorkLog($args);
+		echo $results;
+		break;
+	case "get_files":
+		$results = $db->getBugAttachments($args["id"]);
+		echo $results;
 		break;
 	case "get_module":
 		echo file_get_contents($args["file"]);
 		break;
 	case "email_bug":
-		require_once("bugsend1.php");
-		break;
-	case "admin":
-		require_once("bugadmin.php");
+		$results = $db->do_bug_email($args);
+		echo $results;
 		break;
 	case "admin_users":
 		$recs = $db->getUserEntries();

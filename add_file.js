@@ -11,9 +11,10 @@ function upload_file () {
 }
 
 function fini_upload () {
-	opener.document.form1.update_list.value = "1";
+	//opener.document.form1.update_list.value = "1";
 	//alert('Uploaded');
 	//opener.get_files($F('id'));
+	window.setTimeout(3000,function(){window.close();});
 }
 
 function close_win (w) {

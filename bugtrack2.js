@@ -177,12 +177,13 @@ var bt = // setup the bt namespace
 		$('#bugedit_errors').html('');
 		$('#bugedit_form1 input[type="text"]').val('');
 		$('#bugedit_form1 textarea').val('');
-		$('#bugedit_id').html('TBD');
 		$('#euser').html(bt.login_content.uid);
 		$('input[name="bid"]').val('');
 		$('select[name="bt_group"]').val(bt.group_def);
 		$('select[name="bug_type"]').val('');
 		$('select[name="status"]').val('o');
+		$('#assignedDiv2').html('');
+		$('#bt_assign_btn2').hide();
 		$('select[name="priority"]').val('3');
 		$('#filesDiv,#bfiles,#assignedDiv').html('');
 		$('.bt_date').html('');
@@ -191,10 +192,9 @@ var bt = // setup the bt namespace
 
 	edit_bug: function ( event, id )
 	{
-		var id2 = $('#bugshow_id').val();
+		var id2 = $('#bug_id').val();
 		if (id) id2 = id;
 		//alert('edit_bug '+id2);
-		var grp = id2.replace(/\d+$/,'');
 		var params = "action=edit&id="+id2;
 		$.ajax({
 			url: bt.URL,
@@ -207,15 +207,16 @@ var bt = // setup the bt namespace
 				$('#bugshow_div').dialog('close');
 				bt.showDialogDiv('BugTrack Edit '+id2,'bugedit_div');
 				$('#bugedit_errors').html('');
-				$('#bugedit_id').html(id2);
-				$('#bid').val(data.id);
-				$('#bug_id').html(data.bug_id);
+				$('#bugedit_id').html(data.bug_id);
+				var grp = data.bug_id.replace(/\d+$/,'');
 				$('select[name="bt_group"]').val(grp);
 				$('input[name="descr"]').val(data.descr);
 				$('input[name="product"]').val(data.product);
 				$('select[name="bug_type"]').val(data.bug_type);
 				$('select[name="status"]').val(data.status);
 				$('select[name="priority"]').val(data.priority);
+				$('#assignedDiv2').html(data.aname);
+				$('#bt_assign_btn2').show();
 				$('textarea[name="comments"]').val(data.comments);
 				$('textarea[name="solution"]').val(data.solution);
 				$('#edtm').html(data.edtm);
@@ -234,7 +235,9 @@ var bt = // setup the bt namespace
 
 	bugshow: function ( event, id )
 	{
-		var params = "action=show&id="+id;
+		//alert(id);
+		var id2 = parseInt(id.replace(/[^\d]/g,''));
+		var params = "action=show&id="+id2;
 		$.ajax({
 			url: bt.URL,
 			type: 'post',
@@ -243,21 +246,25 @@ var bt = // setup the bt namespace
 			success: function (data)
 			{
 				//$('#content_div').html(response);
-				bt.showDialogDiv('BugTrack Entry '+id,'bugshow_div');
+				bt.showDialogDiv('BugTrack Entry '+data.bug_id,'bugshow_div');
 				console.log(data);
 				$('#bt_admin_errors').html('');
-				$('#bug_id_v').html(id);
-				$('#bugshow_id').val(id);
+				$('#bug_id').val(data.bug_id);
+				$('#bug_id2_v').html(data.bug_id);
+				$('#bid').val(data.id);
 				$('#descr_v').html(data.descr);
 				$('#product_v').html(data.product);
 				$('#bt_v').html(data.t_descr);
 				$('#status_v').html(data.status_descr);
 				$('#priority_v').html(data.priority_descr);
+				$('#assignedDiv1').html(data.aname);
 				$('#comments_v').html(data.comments);
 				$('#solution_v').html(data.solution);
 				$('#edtm_v').html(data.edtm);
 				$('#udtm_v').html(data.udtm);
 				$('#cdtm_v').html(data.cdtm);
+				bt.get_files(event);
+				bt.worklog_show();
 			}
 		});
 		return false;
@@ -279,6 +286,8 @@ var bt = // setup the bt namespace
 		}
 		$('#bugedit_errors').html('');
 		var params = 'action=add_update&'+$('#bugedit_form1').serialize();
+		params += '&id='+$('#bid').val();
+		params += '&bug_id='+$('#bug_id').val();
 		//alert('bughandler '+params);
 		$.ajax({
 			url: bt.URL,
@@ -294,59 +303,114 @@ var bt = // setup the bt namespace
 		return false;
 	},
 
-	bugdel: function ( event, id )
+	delete_bug: function ( event )
 	{
 		if (!confirm("Really delete this entry?")) return false;
-		var params = "action=delete&id="+id;
+		var params = 'action=delete';
+		params += '&id='+$('#bid').val();
 		$.ajax({
 			url: bt.URL,
 			type: 'post',
 			data: params,
 			dataType: 'html',
-			success: function (data)
+			success: function (response)
 			{
 				if (/^SUCCESS/.test(response))
 				{
-					bt.cancelDialog(event);
+					$('#bugshow_div').dialog('close');
+					bt.buglist(event);
 				}
 				else
-					$('#content_div').html(response);
+					alert(response);
 			}
 		});
 		return false;
 	},
 
-	add_worklog: function ( event, id ) {
-		var params = "action=add_worklog&id="+id;
+	assign_search: function ( event )
+	{
+		//alert('assign_search');
+		bt.showDialogDiv('BugTrack Assign','bt_users_search', 700);
+		return false;
+	},
+
+	handle_search: function ( event )
+	{
+		$('#bt_user_assign_tbl tbody').off( 'click', 'button');
+		var params = "action=getUsersSearch";
+		var f = document.bt_form9;
+		var table = $('#bt_user_assign_tbl').DataTable({
+			'ajax': {
+				'url': bt.URL,
+				'type': 'post',
+				'data': { 'action': 'getUsersSearch', 'lname': f.lname.value, 'fname': f.fname.value }
+			},
+			'destroy': true,
+			'order': [[ 0, "asc" ]],
+			'columnDefs': [ {
+				'targets': -1,
+				'data': null,
+				'defaultContent': '<button>Select</button>'
+			} ]
+		});
+		$('#bt_user_assign_tbl tbody').on( 'click', 'button', function () {
+			var data = table.row( $(this).parents('tr') ).data();
+			//alert( 'user='+data[0]);
+			bt.assign_user(event,data[0]);
+		} );
+		return false;
+	},
+	
+	assign_user: function ( event, user )
+	{
+		var id = $('#bug_id').val();
+		var params = 'action=assign_user';
+		params += '&id='+id;
+		params += '&uid='+user;
 		$.ajax({
 			url: bt.URL,
 			type: 'post',
 			data: params,
 			dataType: 'html',
-			success: function (data)
+			success: function (response)
 			{
-				bt.showDialog('BugTrack Worklog',response);
-				$('#bt_form2').submit(bt.workloghandler);
-				$('#cancel2').click(function(event)
-				{
-					bt.bugshow(event,id);
-				});
+				$('#bt_users_search').dialog('close');
+				bt.bugshow(event,id);
 			}
 		});
 		return false;
 	},
 
+	add_worklog: function ( event ) {
+		bt.showDialogDiv('BugTrack Worklog','bt_worklog_form');
+		$('#bt_wl_bug_id').html($('#bug_id').val());
+		$('#bt_wl_descr').html($('#descr_v').html());
+		$('#bt_bug_comments').html($('#comments_v').html());
+		$('input[name="wl_public"][value="n"]').prop('checked',true);
+		$('textarea[name="wl_comments"]').val('');
+		$('#bt_wl_ename').html($('#usernm').html());
+		$('#bt_wl_entry_dtm').html($('#edtm_v').html());
+		$('#wl_errors').html('');
+		$('textarea[name="wl_comments"]').focus();
+		return true;
+	},
+
 	workloghandler: function( event ) {
-		//alert('workloghandler');
+		//alert('workloghandler '+$('#bt_form2').serialize()); return false;
 		//var err = bt.validate();
 		var err = '';
+		if ($.trim($('textarea[name="wl_comments"]').val()) == '')
+			err += ' - Worklog Comments must not be blank<br>';
 		if (err != '')
 		{
-			$('#message').html('Errors encountered:<br>'+err);
+			$('#wl_errors').html('Errors encountered:<br>'+err);
 			return false;
 		}
-		var id = $('#bt_form2 input[name="id"]').val();
-		var params = '&'+$('#bt_form2').serialize()+'&action=worklog_add';
+		var id = $('#bid').val();
+		var params = 'action=worklog_add&'+$('#bt_form2').serialize();
+		params += '&usernm='+$('#usernm').val();
+		params += '&id='+id;
+		params += '&bug_id='+$('#bug_id').val();
 		//alert('workloghandler '+params);
 		$.ajax({
 			url: bt.URL,
@@ -357,15 +421,45 @@ var bt = // setup the bt namespace
 			{
 				if (/^SUCCESS/.test(response))
 				{
-					//var id = response.replace(/^SUCCESS /,'');
-					//var id = $('#id').val();
-					bt.bugshow(event,id);
+					bt.worklog_show();
+					$('#bt_worklog_form').dialog('close');
 				}
 				else
-					$('#message').html(response);
+					$('#wl_errors').html(response);
 			}
 		});
 		return false;
+	},
+	
+	worklog_show: function ( )
+	{
+		$('#bt_worklog_div').empty();
+		var params = "action=get_worklog_entries";
+		params += '&id='+$('#bid').val();
+		$.ajax({
+			url: bt.URL,
+			type: 'post',
+			data: params,
+			dataType: 'json',
+			success: function (data)
+			{
+				var div = $('#bt_worklog_div');
+				if (data.length == 0)
+					div.html('No worklog records');
+				else
+				{
+					var tbl = $('<table></table>');
+					div.append(tbl);
+					for (var x=0; x<data.length; ++x)
+					{
+						var tr = $('<tr><th>Date/Time: '+data[x].entry_dtm+'</th></tr>');
+						div.append(tr);
+						tr = $('<tr><td>'+bt.nl2br(data[x].comments)+'<hr></td></tr>');
+						div.append(tr);
+					}
+				}
+			}
+		});
 	},
 
 	get_worklog: function (id) {
@@ -375,18 +469,76 @@ var bt = // setup the bt namespace
 		return false;
 	},
 
-	email_bug: function (id) {
-		var params = "action=email_bug&id="+id;
+	show_email: function ( event ) {
+		bt.showDialogDiv('BugTrack Email','bt_email_div');
+		$('#bug_id_email').html($('#bug_id').val());
+		$('#descr_email').html($('#descr_v').html());
+		$('input[name="subject"]').val($('#bug_id').val()+' - '+$('#descr_v').html());
+		$('#email_errors').html('');
+		return true;
+	},
+	
+	get_files: function ( event )
+	{
+		$('#filesDiv').empty();
+		var params = 'action=get_files';
+		params += '&id='+$('#bid').val();
+		params += '&bug_id='+$('#bug_id').val();
+		$.ajax({
+			url: bt.URL,
+			type: 'post',
+			data: params,
+			dataType: 'json',
+			success: function (data)
+			{
+				var out = '';
+				if (data.length == 0)
+					out = 'No attachments';
+				else
+				{
+					$.each(data,function (i)
+					{
+						out += '<a href="get_file.php?id='+data[i].id+'" target="_blank">'+data[i].file_name+'</a> ('+data[i].file_size+') <span onclick="return remove_file('+data[i].id+');">Remove</span><br>';
+					});
+				}
+				$('#filesDiv').html(out);
+			}
+		});
+	},
+
+	attach_file: function ( event )
+	{
+		//$('errors').update();
+		$('#update_list').val("0");
+		//alert("add_file called");
+		w = window.open('add_file.php?id='+$('#bid').val()+'&bug_id='+$('#bug_id').val(), 'Add_file', 'width=620,height=280,resizable,menubar,scrollbars');
+		//setTimeout("watch_add(w)",2000);
+		bt.get_files(event);
+		return false;
+	},
+
+	remove_file: function ( id )
+	{
+		if (!confirm('Really remove this attachment file?')) return false;
+// 		$.post('remove_fileAjax.php', { id: id }, function (msg) {
+// 			get_files($('#id').val());
+// 		});
+		return false;
+	},
+
+	email_bug: function (e) {
+		var params = 'action=email_bug';
+		params += '&id='+$('#bid').val();
+		params += '&bug_id='+$('#bug_id').val();
+		params += '&'+$('#bug_email_form').serialize();
 		$.ajax({
 			url: bt.URL,
 			type: 'post',
 			data: params,
 			dataType: 'html',
-			success: function (data)
+			success: function (response)
 			{
-				$('#content_div').html(response);
-				$('#bt_form3').submit(bt.workloghandler);
-				$('#cancel3').click(bt.cancelDialog);
+				$('#email_errors').html(response);
 			}
 		});
 		return false;
@@ -471,7 +623,7 @@ var bt = // setup the bt namespace
 			success: function (data)
 			{
 				data = data[0];
-				console.log(data);
+				//console.log(data);
 				bt.showDialogDiv('User Edit','bt_users_form');
 				$('#bt_user_form_id').submit(bt.userhandler);
 				$('#bt_admin_errors').html('');
@@ -556,6 +708,7 @@ var bt = // setup the bt namespace
 
 	showDialogDiv: function ( title, div, width )
 	{
+		//alert('showDialogDiv');
 		var w = width ? width : 600;
 		$('#'+div).dialog({
 		  width: w,
@@ -576,6 +729,11 @@ var bt = // setup the bt namespace
 		$('#bugedit_div').dialog('close');
 		bt.buglist();
 	},
+	
+	nl2br: function ( val )
+	{
+		return val.replace(/\r?\n/g,'<br>');
+	},
 
 	/**
 	 * @param name string
@@ -595,7 +753,7 @@ var bt = // setup the bt namespace
 			var opt = $('<option></option>').attr('value',rec.cd).html(rec.descr);
 			obj.append(opt);
 		}
-		console.log(obj);
+		//console.log(obj);
 		return obj;
 	},
 
@@ -609,7 +767,7 @@ var bt = // setup the bt namespace
 			dataType: 'json',
 			success: function (data)
 			{
-				console.log(data);
+				//console.log(data);
 				var sel = bt.build_selection('bt_group',data.bt_groups);
 				$('#bt_groups').empty().append(sel);
 				var sel = bt.build_selection('bt_group',data.bt_groups);
@@ -641,6 +799,9 @@ $(function ()
 	$('#bt_help_btn').button();
 	$('#bt_help_btn').click(bt.bughelp);
 	$('#bugedit_form1').submit(bt.bughandler);
+	$('#bt_form2').submit(bt.workloghandler);
+	$('#bt_form9').submit(bt.handle_search);
+	$('#bug_email_form').submit(bt.email_bug);
 	$('#cancel1').click(bt.cancelDialog);
 	$('#bt_user_form_id').submit(bt.userhandler);
 	$( document ).ajaxError(function(event, jqxhr, settings, thrownError) {
