@@ -16,7 +16,7 @@
 	//print_r($r); exit;
 	$r = (object)$r[0];
 	$hash = $r->file_hash;
-	$pdir = substr($hash,0,2);
+	$pdir = substr($hash,0,3);
 	$data = file_get_contents($bug->getAdir().$pdir."/".$hash);
 	//echo base64_encode($data); exit;
 

@@ -33,10 +33,7 @@ switch ($args["action"])
 		//print_r($_SESSION);
 		break;
 	case "list":
-		require_once("buglist.php");
-		break;
 	case "list2":
-		//require_once("buglist1.php");
 		//$results = $db->getBugs($args["type"],$args["sel_arg"]);
 		$results = $db->getBugs();
 		echo $results;
@@ -98,10 +95,12 @@ switch ($args["action"])
 		}
 		break;
 	case "user_add_update":
-		require_once("bugadmin3.php");
-		break;
-	case "help":
-		require_once("bughelp.php");
+		if ($args["uid"] == "") {
+			$result = $db->addUser($args);
+		} else {
+			$result = $db->updateUser($args);
+		}
+		echo $result;
 		break;
 	default:
 		die("ERROR: Unknown arguments, ".print_r($args,1));

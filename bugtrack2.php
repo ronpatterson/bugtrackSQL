@@ -84,7 +84,7 @@ Welcome <span id="bt_user_name_top"><?php echo $uname ?></span> <a href="#" oncl
 
 <div id="bt_bugs_list" style="display: none;">
 	<center>
-	<p>Click on Edit to see details. Click column title to sort.</p>
+	<p>Click on Show to see details. Click column title to sort.</p>
 	<div style="width: 650px;">
 	<table id="bt_tbl" class="display" border="1" cellspacing="0" cellpadding="3" width="100%">
 		<thead>
@@ -164,8 +164,6 @@ Welcome <span id="bt_user_name_top"><?php echo $uname ?></span> <a href="#" oncl
 		<div class="fields2"><textarea name="comments" rows="4" cols="40" wrap="virtual"></textarea></div><br class="clear">
 		<label for="solution">Solution:</label>
 		<div class="fields2"><textarea name="solution" rows="4" cols="40" wrap="virtual"></textarea></div><br class="clear">
-		<label>Attachments:</label>
-		<div class="fields2"><div id="filesDiv_e"></div><span id="bfiles"></span></div><br class="clear">
 		<label>Entry By:</label>
 		<div class="fields2"><span id="euser"></span></div><br class="clear">
 		<label>Assigned To:</label>

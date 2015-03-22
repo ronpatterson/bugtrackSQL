@@ -18,7 +18,7 @@ var bt = // setup the bt namespace
 			type: 'post',
 			data: params,
 			dataType: 'html',
-			success: function (data)
+			success: function (response)
 			{
 				if (response == 0)
 				{
@@ -69,7 +69,7 @@ var bt = // setup the bt namespace
 			type: 'post',
 			data: params,
 			dataType: 'html',
-			success: function (data)
+			success: function (response)
 			{
 				if (/FAIL/.test(response))
 				{
@@ -106,7 +106,7 @@ var bt = // setup the bt namespace
 			type: 'post',
 			data: params,
 			dataType: 'html',
-			success: function (data)
+			success: function (response)
 			{}
 		});
 		window.setTimeout(bt.check_session,1000); // a bit of a delay
@@ -337,7 +337,6 @@ var bt = // setup the bt namespace
 	handle_search: function ( event )
 	{
 		$('#bt_user_assign_tbl tbody').off( 'click', 'button');
-		var params = "action=getUsersSearch";
 		var f = document.bt_form9;
 		var table = $('#bt_user_assign_tbl').DataTable({
 			'ajax': {
@@ -417,7 +416,7 @@ var bt = // setup the bt namespace
 			type: 'post',
 			data: params,
 			dataType: 'html',
-			success: function (data)
+			success: function (response)
 			{
 				if (/^SUCCESS/.test(response))
 				{
@@ -520,9 +519,18 @@ var bt = // setup the bt namespace
 	remove_file: function ( id )
 	{
 		if (!confirm('Really remove this attachment file?')) return false;
-// 		$.post('remove_fileAjax.php', { id: id }, function (msg) {
-// 			get_files($('#id').val());
-// 		});
+		var params = 'action=remove_file';
+		params += '&fid='+$('#fid').val();
+		$.ajax({
+			url: bt.URL,
+			type: 'post',
+			data: params,
+			dataType: 'html',
+			success: function (response)
+			{
+				$('#email_errors').html(response);
+			}
+		});
 		return false;
 	},
 
@@ -573,7 +581,6 @@ var bt = // setup the bt namespace
 	bugadmin_users: function ( event )
 	{
 		$('#bt_user_tbl tbody').off( 'click', 'button');
-		var params = "action=admin_users";
 		var table = $('#bt_user_tbl').DataTable({
 			'ajax': {
 				'url': bt.URL,
@@ -648,15 +655,22 @@ var bt = // setup the bt namespace
 	},
 
 	userhandler: function( event ) {
-		//alert('userhandler');
+		//alert('userhandler '+$('#bt_user_form_id').serialize());
 		var emailre = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,6})+$/;
 // 		var err = bt.validate();
+		var f = document.bt_user_form;
 		var err = '';
-		if (emailre.test($('#email').val()))
+		if ($.trim(f.uid.value) == '')
+			err += " - UID must not be blank<br>";
+		if ($.trim(f.lname.value) == "")
+			err += " - Last Name must not be blank<br>";
+		if (!emailre.test(f.email.value))
 			err += ' - Email is not valid<br>';
+		if ($.trim(f.bt_group.value) == "")
+			err += " - Group must be selected<br>";
 		if (err != '')
 		{
-			$('#errors').html('Errors encountered:<br>'+err);
+			$('#bt_admin_errors').html('Errors encountered:<br>'+err);
 			return false;
 		}
 		var params = 'action=user_add_update';
@@ -759,6 +773,20 @@ var bt = // setup the bt namespace
 
 	init: function ( )
 	{
+		$('#bt_refresh_btn').button();
+		$('#bt_refresh_btn').click(bt.buglist);
+		$('#bt_add_btn').button();
+		$('#bt_add_btn').click(bt.bugadd);
+		$('#bt_admin_btn').button();
+		$('#bt_admin_btn').click(bt.bugadmin);
+		$('#bt_help_btn').button();
+		$('#bt_help_btn').click(bt.bughelp);
+		$('#bugedit_form1').submit(bt.bughandler);
+		$('#bt_form2').submit(bt.workloghandler);
+		$('#bt_form9').submit(bt.handle_search);
+		$('#bug_email_form').submit(bt.email_bug);
+		$('#cancel1').click(bt.cancelDialog);
+		$('#bt_user_form_id').submit(bt.userhandler);
 		var params = 'action=bt_init';
 		$.ajax({
 			url: bt.URL,
@@ -790,26 +818,11 @@ var bt = // setup the bt namespace
 
 $(function ()
 {
-	$('#bt_refresh_btn').button();
-	$('#bt_refresh_btn').click(bt.buglist);
-	$('#bt_add_btn').button();
-	$('#bt_add_btn').click(bt.bugadd);
-	$('#bt_admin_btn').button();
-	$('#bt_admin_btn').click(bt.bugadmin);
-	$('#bt_help_btn').button();
-	$('#bt_help_btn').click(bt.bughelp);
-	$('#bugedit_form1').submit(bt.bughandler);
-	$('#bt_form2').submit(bt.workloghandler);
-	$('#bt_form9').submit(bt.handle_search);
-	$('#bug_email_form').submit(bt.email_bug);
-	$('#cancel1').click(bt.cancelDialog);
-	$('#bt_user_form_id').submit(bt.userhandler);
 	$( document ).ajaxError(function(event, jqxhr, settings, thrownError) {
 		bt.showDialog( "ERROR!", "A error occurred during server call.<br>" + thrownError );
 	});
 	bt.init();
 	//login_content = $('#login_content').html();
 	//$('#login_content').html('');
-	//bt.check_session();
-	//bt.buglist();
+	bt.check_session();
 });

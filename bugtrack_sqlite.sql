@@ -57,7 +57,7 @@ create index btw_bid_idx on bt_worklog(bug_id);
 
 // attach file structure
 // /usr/local/data
-// /usr/local/data/{first 2 chars of hash}/{hash}
+// /usr/local/data/{first 3 chars of hash}/{hash}
 
 create table bt_attachments (
     id              integer not null primary key autoincrement,

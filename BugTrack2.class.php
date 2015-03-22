@@ -339,7 +339,7 @@ order by entry_dtm desc
 // 		$count = $this->dbh->changes();
 // 		if ($count == 0) die("ERROR: Record not added! $sql");
 		$id = $this->dbh->lastInsertRowID();
-		$pdir = substr($hash,0,2);
+		$pdir = substr($hash,0,3);
 		if (!file_exists($this->adir.$pdir))
 		{
 			mkdir($this->adir.$pdir);
@@ -362,7 +362,7 @@ order by entry_dtm desc
 		if (!$count2) die("SQL ERROR: $sql, ".print_r($this->dbh->lastErrorMsg(),true));
 		if ($count == 1)
 		{
-			$pdir = substr($hash,0,2);
+			$pdir = substr($hash,0,3);
 			unlink($this->adir.$pdir."/".$hash);
 		}
 	}
@@ -457,12 +457,24 @@ order by lname,fname";
 		if ($result === FALSE) die("SQL ERROR: $sql, ".print_r($this->dbh->lastErrorMsg(),true));
 		$count = $this->dbh->changes();
 		if ($count == 0) die("ERROR: Record not added! $sql");
-		return $this->dbh->lastInsertRowID();
+		//return $this->dbh->lastInsertRowID();
+		$msg = "Hello,
+
+BugTrack user $uid2 was added by $ename.
+
+Name: $lname, $fname
+";
+		$to = $email;
+		//if ($to == "") $to = $email;
+		$admin_emails = $this->get_admin_emails();
+		$headers = "From: $from_email\r\nCC: $admin_emails,$email";
+		//mail($to,"BugTrack $uid2 user entry",stripcslashes($msg),$headers);
+		return "SUCCESS";
 	}
 
 	// uid = record key
 	// rec = record array
-	public function updateUser ($uid, $rec)
+	public function updateUser ($rec)
 	{
 		extract($rec);
 		if ($pw == $pw2) $pw5 = $pw;
@@ -476,6 +488,7 @@ order by lname,fname";
 		if ($result === FALSE) die("SQL ERROR: $sql, ".print_r($this->dbh->lastErrorMsg(),true));
 		$count = $this->dbh->changes();
 		if ($count == 0) die("ERROR: Record not updated! $sql");
+		return "SUCCESS";
 	}
 
 	public function get_admin_emails ()
