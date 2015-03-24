@@ -1,6 +1,6 @@
 // bugtrack.js
 //
-// Ron Patterson
+// Ron Patterson, WildDog Design
 
 var bt = // setup the bt namespace
 {
@@ -115,28 +115,18 @@ var bt = // setup the bt namespace
 
 	buglist: function ( event, type )
 	{
-		var params = "action=list&type="+type;
-		$.ajax({
-			url: bt.URL,
-			type: 'post',
-			data: params,
-			dataType: 'html',
-			success: function (response)
-			{
-				var sel_val = '';
-				if (type == 'bytype')
-				{
-					sel_val = $('#bug_type').val();
-				}
-				if (type == 'bystatus')
-				{
-					sel_val = $('#status').val();
-				}
-				//$('#content_div').html(response);
-				$('#content_div').show();
-				bt.buglist2(event, type, sel_val);
-			}
-		});
+		var sel_val = '';
+		if (type == 'bytype')
+		{
+			sel_val = " and bug_type = '"+$('select[name="bug_type2"]').val()+"'";
+		}
+		if (type == 'bystatus')
+		{
+			sel_val = " and b.status = '"+$('select[name="status2"]').val()+"'";
+		}
+		//$('#content_div').html(response);
+		$('#content_div').show();
+		bt.buglist2(event, type, sel_val);
 		return false;
 	},
 
@@ -247,7 +237,7 @@ var bt = // setup the bt namespace
 			{
 				//$('#content_div').html(response);
 				bt.showDialogDiv('BugTrack Entry '+data.bug_id,'bugshow_div');
-				console.log(data);
+				//console.log(data);
 				$('#bt_admin_errors').html('');
 				$('#bug_id').val(data.bug_id);
 				$('#bug_id2_v').html(data.bug_id);
@@ -744,6 +734,12 @@ var bt = // setup the bt namespace
 		bt.buglist();
 	},
 	
+	cancelDialog2: function ( event )
+	{
+		$('#bt_worklog_form').dialog('close');
+		bt.buglist();
+	},
+	
 	nl2br: function ( val )
 	{
 		return val.replace(/\r?\n/g,'<br>');
@@ -786,6 +782,7 @@ var bt = // setup the bt namespace
 		$('#bt_form9').submit(bt.handle_search);
 		$('#bug_email_form').submit(bt.email_bug);
 		$('#cancel1').click(bt.cancelDialog);
+		$('#cancel2').click(bt.cancelDialog2);
 		$('#bt_user_form_id').submit(bt.userhandler);
 		var params = 'action=bt_init';
 		$.ajax({

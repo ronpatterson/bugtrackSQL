@@ -2,7 +2,7 @@
 ini_set("display_errors", "on");
 require_once("btsession.php");
 // bugtrack.php - BugTrack main
-// Ron Patterson
+// Ron Patterson, WildDog Design
 // SQLite version
 // if ($_SESSION['user_id']=="") {
 // 	die("<html><b>Not logged in!!<p><a href=login.php>Login</a></b></html>");
@@ -178,9 +178,9 @@ Welcome <span id="bt_user_name_top"><?php echo $uname ?></span> <a href="#" oncl
         <div class="fields2"><input type="submit" value="SAVE"> <input
  type="button" id="cancel1" value="Cancel"></div><br class="clear">
 	</fieldset>
+	</form>
 	<br>
 	<div class="required" style="font-size: 9pt;" align="center">* Required fields</div>
-	</form>
 	<div id="bugedit_errors"></div>
 </div>
 
@@ -203,8 +203,9 @@ Welcome <span id="bt_user_name_top"><?php echo $uname ?></span> <a href="#" oncl
  		<label>&nbsp;</label>
         <div class="fields2"><input type="submit" value="Send Bug Message"> <input type="reset"></div><br class="clear">
 	</fieldset>
+	</form>
 	<div id="email_errors"></div>
-</form>
+</div>
 
 <div id="bt_worklog_form" class="bugform" style="display: none;">
 	<form id="bt_form2" name="bt_form2" method="post"><br>
@@ -229,10 +230,10 @@ Welcome <span id="bt_user_name_top"><?php echo $uname ?></span> <a href="#" oncl
         <div class="fields2"><input type="submit" value="SAVE"> <input
  type="button" id="cancel2" value="Cancel"></div><br class="clear">
 	</fieldset>
+	</form>
 	<br>
 	<div class="required" style="font-size: 9pt;" align="center">* Required fields</div>
 	<div id="wl_errors"></div>
-	</form>
 </div>
 
 <div id="bt_users_search" style="display: none;">

@@ -137,15 +137,14 @@ where $crit
 		return json_encode((object)$row);
 	}
 
-	public function getBugs ($crit = "", $order = "")
+	public function getBugs ($type = "", $crit = "")
 	{
-		if (empty($crit)) $crit = "1=1";
 		$sql = "
 select bug_id,b.descr,entry_dtm,t.descr from bt_bugs b
 	inner join bt_type t on (t.cd=b.bug_type)
-where $crit
+where 1=1 $crit
 ";
-		if (!empty($order)) $sql .= " order by ".$order;
+		//if (!empty($order)) $sql .= " order by ".$order;
 		$stmt = $this->dbh->query($sql);
 		if (!$stmt) die("SQL ERROR: $sql, ".print_r($this->dbh->lastErrorMsg(),true));
 		$results = array();

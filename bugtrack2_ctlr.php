@@ -2,7 +2,7 @@
 ini_set("display_errors", "on");
 require_once("btsession.php");
 // bugtrack_ctlr.php - BugTrack controller
-// Ron Patterson
+// Ron Patterson, WildDog Design
 // SQLite version
 // if ($_SESSION['user_id']=="") {
 // 	die("<html><b>Not logged in!!<p><a href=login.php>Login</a></b></html>");
@@ -34,8 +34,8 @@ switch ($args["action"])
 		break;
 	case "list":
 	case "list2":
-		//$results = $db->getBugs($args["type"],$args["sel_arg"]);
-		$results = $db->getBugs();
+		$results = $db->getBugs($args["type"],$args["sel_arg"]);
+		//$results = $db->getBugs();
 		echo $results;
 		break;
 	case "getUsersSearch":
