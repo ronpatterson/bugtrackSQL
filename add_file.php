@@ -19,7 +19,7 @@ else {
 
 require_once("dbdef.php");
 require("bugcommon.php");
-require("BugTrack.class.php");
+require("BugTrack2.class.php");
 $ttl = "BugTrack Attachment";
 $usernm = "rlpatter";
 

@@ -115,23 +115,26 @@ var bt = // setup the bt namespace
 
 	buglist: function ( event, type )
 	{
+		//console.log(event,type);
+		var type2 = type ? type : '';
 		var sel_val = '';
-		if (type == 'bytype')
+		if (type2 == 'bytype')
 		{
 			sel_val = " and bug_type = '"+$('select[name="bug_type2"]').val()+"'";
 		}
-		if (type == 'bystatus')
+		if (type2 == 'bystatus')
 		{
 			sel_val = " and b.status = '"+$('select[name="status2"]').val()+"'";
 		}
 		//$('#content_div').html(response);
 		$('#content_div').show();
-		bt.buglist2(event, type, sel_val);
+		bt.buglist2(event, type2, sel_val);
 		return false;
 	},
 
 	buglist2: function ( event, type, sel_arg )
 	{
+		//console.log(event,type,sel_arg);
 		var params = {
 			'action': 'list2',
 			'type': type,

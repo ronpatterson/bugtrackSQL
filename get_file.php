@@ -1,13 +1,13 @@
 <?php
 // get_file.php
 // Ron Patterson, WildDog Design
-// PDO version
+// SQLite version
 	session_cache_limiter("private, must-revalidate");
 	
 	$id = $_GET["id"];
 	
 	require("dbdef.php");
-	require("BugTrack.class.php");
+	require("BugTrack2.class.php");
 
 	$bug = new BugTrack($dbpath);
 
