@@ -291,6 +291,7 @@ var bt = // setup the bt namespace
 			{
 				$('#bugedit_errors').html(response);
 				bt.buglist(event);
+				//window.setTimeout(function(e) {$('#bugedit_div').dialog('close');},3000);
 			}
 		});
 		return false;

@@ -162,6 +162,7 @@ where 1=1 $crit
 	{
 		extract($rec);
 		//error_log("rec=".print_r($rec,1));
+		$user_nm = (isset($_SESSION["user_nm"])) ? $_SESSION["user_nm"] : "admin";
 		if ($id == "") // add
 		{
 			$sql = "insert into bt_bugs (descr, product, user_nm, bug_type, status, priority, comments, solution, entry_dtm) values (?,?,?,?,?,?,?,?,datetime('now','localtime'))";
