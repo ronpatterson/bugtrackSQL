@@ -22,7 +22,7 @@ var bt = // setup the bt namespace
 			{
 				if (response == 0)
 				{
-					if (bt.stimer != 0) window.clearInterval(stimer);
+					if (bt.stimer != 0) window.clearInterval(bt.stimer);
 					bt.stimer = 0;
 					bt.login_form();
 				}
@@ -37,7 +37,7 @@ var bt = // setup the bt namespace
 
 	login_form: function (event)
 	{
-		if (bt.stimer != 0) window.clearInterval(stimer);
+		if (bt.stimer != 0) window.clearInterval(bt.stimer);
 		bt.stimer = 0;
 		$('#bt_user_heading').hide();
 		$('#bt_login_form input[type="password"]').val('');

@@ -31,6 +31,9 @@ $uname = (isset($_SESSION["user_nm"])) ? $_SESSION["user_nm"] : "rlpatter";
 <script type="text/javascript" charset="utf-8" src="/lib/scripts/DataTables/DataTables-1.10.5/media/js/jquery.dataTables.js"></script>
 <script type="text/javascript" src="bugtrack2.js"></script>
 <script type="text/javascript" src="fieldedits.js"></script>
+<style type="text/css">
+	button:hover { font-weight: bold; }
+</style>
 </head>
 <body background="" bgcolor="#e0e0e0">
 <center>
