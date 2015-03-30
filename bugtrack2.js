@@ -42,17 +42,17 @@ var bt = // setup the bt namespace
 		$('#bt_user_heading').hide();
 		$('#bt_login_form input[type="password"]').val('');
 		$('#dialog-login').dialog({
-		  width: 400,
-		  maxHeight: 700,
-		  modal: true,
-		  title: 'BugTrack Login',
-		  show: 'fade',
-		  hide: 'fade',
-		  draggable: false,
-		  resizeable: false,
-		  closeOnEscape: false,
-		  dialogClass: "no-close"
-		  //beforeClose: function( event, ui ) {return false;}
+			width: 400,
+			maxHeight: 700,
+			modal: true,
+			title: 'BugTrack Login',
+			show: 'fade',
+			hide: 'fade',
+			draggable: false,
+			resizeable: false,
+			closeOnEscape: false,
+			dialogClass: "no-close"
+			//beforeClose: function( event, ui ) {return false;}
 		});
 		$('#login_errors').html('');
 		$('#bt_login_form').submit(bt.login_handler);
@@ -336,7 +336,11 @@ var bt = // setup the bt namespace
 			'ajax': {
 				'url': bt.URL,
 				'type': 'post',
-				'data': { 'action': 'getUsersSearch', 'lname': f.lname.value, 'fname': f.fname.value }
+				'data': { 
+					'action': 'getUsersSearch',
+					'lname': f.lname.value,
+					'fname': f.fname.value
+				}
 			},
 			'destroy': true,
 			'order': [[ 0, "asc" ]],
