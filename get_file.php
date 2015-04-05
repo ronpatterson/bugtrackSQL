@@ -12,9 +12,9 @@
 	$bug = new BugTrack($dbpath);
 
 	$r = $bug->getBugAttachment($id);
-	if (!$r) die("ERROR: No attachment found ($id)");
+	if (empty($r)) die("ERROR: No attachment found ($id)");
 	//print_r($r); exit;
-	$r = (object)$r[0];
+	$r = $r[0];
 	$hash = $r->file_hash;
 	$pdir = substr($hash,0,3);
 	$data = file_get_contents($bug->getAdir().$pdir."/".$hash);

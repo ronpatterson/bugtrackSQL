@@ -9,6 +9,7 @@ var bt = // setup the bt namespace
 	login_content: { 'uid': 'rlpatter' },
 	stimer: 0,
 	group_def: 'WDD',
+	group_data: {},
 
 	check_session: function (event)
 	{
@@ -149,6 +150,13 @@ var bt = // setup the bt namespace
 			},
 			'destroy': true,
 			'order': [[ 0, "asc" ]],
+			'columns': [
+				{'data': 'bug_id'},
+				{'data': 'descr'},
+				{'data': 'edtm'},
+				{'data': 'status'},
+				null
+			],
 			'columnDefs': [ {
 				'targets': -1,
 				'data': null,
@@ -158,7 +166,7 @@ var bt = // setup the bt namespace
 		$('#bt_tbl tbody').on( 'click', 'button', function () {
 			var data = table.row( $(this).parents('tr') ).data();
 			//alert( 'user='+data[0]);
-			bt.bugshow(event,data[0]);
+			bt.bugshow(event,data.id);
 		} );
 		$('#bt_bugs_list').show();
 		return false;
@@ -201,6 +209,7 @@ var bt = // setup the bt namespace
 				bt.showDialogDiv('BugTrack Edit '+id2,'bugedit_div');
 				$('#bugedit_errors').html('');
 				$('#bugedit_id').html(data.bug_id);
+				$('#oldstatus').val(data.status);
 				var grp = data.bug_id.replace(/\d+$/,'');
 				$('select[name="bt_group"]').val(grp);
 				$('input[name="descr"]').val(data.descr);
@@ -229,8 +238,8 @@ var bt = // setup the bt namespace
 	bugshow: function ( event, id )
 	{
 		//alert(id);
-		var id2 = parseInt(id.replace(/[^\d]/g,''));
-		var params = "action=show&id="+id2;
+		//var id2 = parseInt(id.replace(/[^\d]/g,''));
+		var params = "action=show&id="+id;
 		$.ajax({
 			url: bt.URL,
 			type: 'post',
@@ -253,6 +262,7 @@ var bt = // setup the bt namespace
 				$('#assignedDiv1').html(data.aname);
 				$('#comments_v').html(data.comments);
 				$('#solution_v').html(data.solution);
+				$('#ename_v').html(data.ename);
 				$('#edtm_v').html(data.edtm);
 				$('#udtm_v').html(data.udtm);
 				$('#cdtm_v').html(data.cdtm);
@@ -344,6 +354,14 @@ var bt = // setup the bt namespace
 			},
 			'destroy': true,
 			'order': [[ 0, "asc" ]],
+			'columns': [
+				{'data': 'uid'},
+				{'data': 'name'},
+				{'data': 'email'},
+				{'data': 'roles'},
+				{'data': 'active'},
+				null
+			],
 			'columnDefs': [ {
 				'targets': -1,
 				'data': null,
@@ -353,7 +371,7 @@ var bt = // setup the bt namespace
 		$('#bt_user_assign_tbl tbody').on( 'click', 'button', function () {
 			var data = table.row( $(this).parents('tr') ).data();
 			//alert( 'user='+data[0]);
-			bt.assign_user(event,data[0]);
+			bt.assign_user(event,data.uid);
 		} );
 		return false;
 	},
@@ -533,6 +551,16 @@ var bt = // setup the bt namespace
 	},
 
 	email_bug: function (e) {
+		var err = '';
+		if ($.trim($('input[name="sendto"]').val()) == '')
+			err += ' - Send To must not be blank<br>';
+		if ($.trim($('input[name="subject"]').val()) == '')
+			err += ' - Subject must not be blank<br>';
+		if (err != '')
+		{
+			$('#email_errors').html('Errors encountered:<br>'+err);
+			return false;
+		}
 		var params = 'action=email_bug';
 		params += '&id='+$('#bid').val();
 		params += '&bug_id='+$('#bug_id').val();
@@ -587,6 +615,14 @@ var bt = // setup the bt namespace
 			},
 			'destroy': true,
 			'order': [[ 0, "asc" ]],
+			'columns': [
+				{'data': 'uid'},
+				{'data': 'name'},
+				{'data': 'email'},
+				{'data': 'roles'},
+				{'data': 'active'},
+				null
+			],
 			'columnDefs': [ {
 				'targets': -1,
 				'data': null,
@@ -596,7 +632,7 @@ var bt = // setup the bt namespace
 		$('#bt_user_tbl tbody').on( 'click', 'button', function () {
 			var data = table.row( $(this).parents('tr') ).data();
 			//alert( 'user='+data[0]);
-			bt.user_show(event,data[0]);
+			bt.user_show(event,data.uid);
 		} );
 		return false;
 	},
@@ -606,8 +642,12 @@ var bt = // setup the bt namespace
 		bt.showDialogDiv('User Add','bt_users_form');
 		$('#bt_admin_errors').html('');
 		$('#bt_users_form input[type="text"]').val('');
-		$('#uid1').html('');
+		$('input[name="pw"]').val('');
+		$('input[name="pw2"]').val('');
+		$('input[name="uid1"]').val('');
+		$('input[name="uid1"]').removeAttr('readonly');
 		$('input[name="uid"]').val('');
+		$('input[name="id"]').val('');
 		$('input[name="active"]').removeAttr('checked');
 		$('input[name="active"][value="y"]').prop('checked',true);
 		$('input[name="roles"]').removeAttr('checked');
@@ -633,7 +673,9 @@ var bt = // setup the bt namespace
 				$('#bt_user_form_id').submit(bt.userhandler);
 				$('#bt_admin_errors').html('');
 				$('input[name="uid"]').val(uid);
-				$('#uid1').html(uid);
+				$('input[name="id"]').val(data.id);
+				$('input[name="uid1"]').val(uid);
+				$('input[name="uid1"]').attr('readonly',true);
 				$('input[name="lname"]').val(data.lname);
 				$('input[name="fname"]').val(data.fname);
 				$('input[name="email"]').val(data.email);
@@ -774,6 +816,21 @@ var bt = // setup the bt namespace
 		//console.log(obj);
 		return obj;
 	},
+	
+	get_lookup: function ( group, cd )
+	{
+		//debugger;
+		var descr = '';
+		for (var i=0; i<group.length; ++i)
+		{
+			var item = group[i];
+			if (cd == item.cd)
+			{
+				return item.descr;
+			}
+		}
+		return 'n/a';
+	},
 
 	init: function ( )
 	{
@@ -792,6 +849,7 @@ var bt = // setup the bt namespace
 		$('#cancel1').click(bt.cancelDialog);
 		$('#cancel2').click(bt.cancelDialog2);
 		$('#bt_user_form_id').submit(bt.userhandler);
+		$('#bt_show_buttons span').button();
 		var params = 'action=bt_init';
 		$.ajax({
 			url: bt.URL,
@@ -801,6 +859,7 @@ var bt = // setup the bt namespace
 			success: function (data)
 			{
 				//console.log(data);
+				bt.group_data = data;
 				var sel = bt.build_selection('bt_group',data.bt_groups);
 				$('#bt_groups').empty().append(sel);
 				var sel = bt.build_selection('bt_group',data.bt_groups);

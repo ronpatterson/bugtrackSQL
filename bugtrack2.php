@@ -17,7 +17,7 @@ $uname = (isset($_SESSION["user_nm"])) ? $_SESSION["user_nm"] : "rlpatter";
 	<title>BugTrack</title>
 	<meta name="author" content="Ron Patterson, ASD20">
 	<link type="text/css" rel="stylesheet" href="bugtrack.css" title="bt styles">
-<link rel="stylesheet" href="/lib/scripts/css/custom-theme/jquery-ui-1.10.1.custom.css">
+<link rel="stylesheet" href="/lib/scripts/jquery/ui-1.11/jquery-ui.min.css">
 <!--
 <style type="text/css" title="currentStyle">
 	@import "/lib/scripts/DataTables/media/css/demo_page.css";
@@ -26,11 +26,11 @@ $uname = (isset($_SESSION["user_nm"])) ? $_SESSION["user_nm"] : "rlpatter";
 </style>
 -->
 <link rel="stylesheet" href="/lib/scripts/DataTables/DataTables-1.10.5/media/css/jquery.dataTables.css">
-<script type="text/javascript" src="/lib/scripts/DataTables/DataTables-1.10.5/media/js/jquery.js"></script>
-<script type="text/javascript" src="/lib/scripts/jquery-ui-1.10.1.custom.min.js"></script>
+<script type="text/javascript" src="/lib/scripts/jquery/jquery-1.11.2.js"></script>
+<script type="text/javascript" src="/lib/scripts/jquery/jquery-migrate-1.2.1.min.js"></script>
+<script type="text/javascript" src="/lib/scripts/jquery/ui-1.11/jquery-ui.min.js"></script>
 <script type="text/javascript" charset="utf-8" src="/lib/scripts/DataTables/DataTables-1.10.5/media/js/jquery.dataTables.js"></script>
 <script type="text/javascript" src="bugtrack2.js"></script>
-<script type="text/javascript" src="fieldedits.js"></script>
 <style type="text/css">
 	button:hover { font-weight: bold; }
 </style>
@@ -38,7 +38,7 @@ $uname = (isset($_SESSION["user_nm"])) ? $_SESSION["user_nm"] : "rlpatter";
 <body background="" bgcolor="#e0e0e0">
 <center>
 <table>
-	<tr><td><img src="BugTrack.gif" alt="BugTrack"></td><td width="30">&nbsp;</td>
+	<tr><td><img src="BugTrack.gif" alt="BugTrack">Powered by <a href="http://www.mongodb.org/"><img src="sqlite370_banner.gif" alt="MongoDB" width="110" height="50"></a></td><td width="30">&nbsp;</td>
 	<td valign="middle"><font size="+1"><b><? echo $ttl; ?></b></font></td></tr>
 </table><br>
 <input type="hidden" name="usernm" value="<?php echo $uname ?>" id="usernm" />
@@ -122,7 +122,7 @@ Welcome <span id="bt_user_name_top"><?php echo $uname ?></span> <a href="#" oncl
 		<label>Attachments:</label>
 		<div class="fields2"><div id="filesDiv"></div> <input type="button" id="bt_assign_btn1" value="Attach File" onclick="return bt.attach_file();"></div><br class="clear">
 		<label>Entry By:</label>
-		<div class="fields2"><a href="mailto:"><span id="ename_v"></span></a></div><br class="clear">
+		<div class="fields2"><span id="ename_v"></span></div><br class="clear">
 		<label>Assigned To:</label>
 		<div class="fields2"><div id="assignedDiv1"><a href="mailto:"><span id="edit_v"></span></a></div> <input type="button" id="bt_assign_btn1" value="Assign" onclick="return bt.assign_search();"></div><br class="clear">
 		<label>Entry Date/Time:</label>
@@ -132,11 +132,14 @@ Welcome <span id="bt_user_name_top"><?php echo $uname ?></span> <a href="#" oncl
 		<label>Closed Date/Time:</label>
 		<div class="fields2"><span id="cdtm_v"></span></div><br class="clear">
 	</fieldset>
-	<p align="center">
-	<button onclick="return bt.edit_bug(event);">Edit Bug</button>
-	<button onclick="return bt.delete_bug(event);">Delete Bug</button>
-	<button onclick="return bt.show_email(event);">Email Bug</button>
-	<button onclick="return bt.add_worklog(event);">Add Worklog</button>
+	<br>
+	<div align="center" id="bt_show_buttons">
+		<span onclick="return bt.edit_bug(event);">Edit Bug</span>
+		<span onclick="return bt.delete_bug(event);">Delete Bug</span>
+		<span onclick="return bt.show_email(event);">Email Bug</span>
+		<span onclick="return bt.add_worklog(event);">Add Worklog</span>
+	</div>
+	<br>
 	<fieldset>
 	<legend>Bug Worklog</legend>
 	<div id="bt_worklog_div"></div>
@@ -167,10 +170,8 @@ Welcome <span id="bt_user_name_top"><?php echo $uname ?></span> <a href="#" oncl
 		<div class="fields2"><textarea name="comments" rows="4" cols="40" wrap="virtual"></textarea></div><br class="clear">
 		<label for="solution">Solution:</label>
 		<div class="fields2"><textarea name="solution" rows="4" cols="40" wrap="virtual"></textarea></div><br class="clear">
-		<label>Entry By:</label>
-		<div class="fields2"><span id="euser"></span></div><br class="clear">
 		<label>Assigned To:</label>
-		<div class="fields2"><div id="assignedDiv2"></div><input type="button" id="bt_assign_btn2" value="Assign" onclick="return bt.assign_search();"></div><br class="clear">
+		<div class="fields2"><div id="assignedDiv2"></div><!--<input type="button" id="bt_assign_btn2" value="Assign" onclick="return bt.assign_search();">--></div><br class="clear">
 		<label>Entry Date/Time:</label>
 		<div class="fields2"><span id="edtm" class="bt_date"></span></div><br class="clear">
 		<label>Update Date/Time:</label>
@@ -290,7 +291,7 @@ Welcome <span id="bt_user_name_top"><?php echo $uname ?></span> <a href="#" oncl
 		<legend>User Add/Edit</legend>
 		<form name="bt_user_form" id="bt_user_form_id">
 		<table id="bt_user_tbl2" border="0" cellspacing="0" cellpadding="2">
-		<tr><th align="right">UID</th><td><span id="uid1"></span></td></tr>
+		<tr><th align="right">UID</th><td><input type="text" name="uid1" size="20"></td></tr>
 		<tr><th align="right">Last Name</th><td><input type="text" name="lname" value=""></td></tr>
 		<tr><th align="right">First Name</th><td><input type="text" name="fname" value=""></td></tr>
 		<tr><th align="right">Email</th><td><input type="text" name="email" size="40" value=""></td></tr>

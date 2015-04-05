@@ -139,8 +139,9 @@ where $crit
 
 	public function getBugs ($type = "", $crit = "")
 	{
+		global $sarr;
 		$sql = "
-select bug_id,b.descr,entry_dtm,t.descr from bt_bugs b
+select id,bug_id,b.descr,entry_dtm,t.descr,status from bt_bugs b
 	inner join bt_type t on (t.cd=b.bug_type)
 where 1=1 $crit
 ";
@@ -148,9 +149,10 @@ where 1=1 $crit
 		$stmt = $this->dbh->query($sql);
 		if (!$stmt) die("SQL ERROR: $sql, ".print_r($this->dbh->lastErrorMsg(),true));
 		$results = array();
-		while ($row = $stmt->fetchArray(SQLITE3_NUM))
+		while ($row = $stmt->fetchArray(SQLITE3_ASSOC))
 		{
-			$row[2] = $row[2] != "" ? date("m/d/Y g:i a",strtotime($row[2])) : "";
+			$row["edtm"] = $row["entry_dtm"] != "" ? date("m/d/Y g:i a",strtotime($row["entry_dtm"])) : "";
+			$row["status"] = $sarr[$row["status"]];
 			$results[] = (object)$row;
 		}
 		$results = array("data"=>$results);
@@ -247,7 +249,7 @@ order by entry_dtm desc
 		extract($rec);
 		$sql = "insert into bt_worklog (bug_id, user_nm, comments, wl_public, entry_dtm) values (?,?,?,?,datetime('now','localtime'))";
 		$stmt = $this->dbh->prepare($sql);
-		$params = array($id,$usernm,$wl_comments,$wl_public);
+		$params = array($id,$_SESSION["user_id"],$wl_comments,$wl_public);
 		for ($i=0; $i<count($params); ++$i) $stmt->bindValue($i+1,$params[$i]);
 		$result = $stmt->execute();
 		if ($result === FALSE) die("SQL ERROR: $sql, ".print_r($this->dbh->lastErrorMsg(),true));
@@ -263,7 +265,7 @@ order by entry_dtm desc
 		extract($rec);
 		$sql = "update bt_worklog set user_nm=?,comments=?,wl_public=? where id=?";
 		$stmt = $this->dbh->prepare($sql);
-		$params = array($usernm,$comments,$wl_public,$idx);
+		$params = array($_SESSION["user_id"],$comments,$wl_public,$idx);
 		for ($i=0; $i<count($params); ++$i) $stmt->bindValue($i+1,$params[$i]);
 		$result = $stmt->execute();
 		if ($result === FALSE) die("SQL ERROR: $sql, ".print_r($this->dbh->lastErrorMsg(),true));
@@ -369,11 +371,11 @@ order by entry_dtm desc
 
 	public function getUserEntries ()
 	{
-		$sql = "select uid,lname||', '||fname,email,roles,case active when 'y' then 'Yes' else 'No' end active from bt_users order by lname,fname";
+		$sql = "select uid,lname||', '||fname name,email,roles,case active when 'y' then 'Yes' else 'No' end active from bt_users order by lname,fname";
 		$stmt = $this->dbh->query($sql);
 		if (!$stmt) die("SQL ERROR: $sql, ".print_r($this->dbh->lastErrorMsg(),true));
 		$results = array();
-		while ($row = $stmt->fetchArray(SQLITE3_NUM))
+		while ($row = $stmt->fetchArray(SQLITE3_ASSOC))
 		{
 			$results[] = (object)$row;
 		}
@@ -383,7 +385,7 @@ order by entry_dtm desc
 
 	public function getUsersSearch ( $args )
 	{
-		$crit = "1=1";
+		$crit = "1=1"; $params = array();
 		if (trim($args["lname"]) != "")
 		{
 			$crit .= " and lname like ?";
@@ -395,7 +397,7 @@ order by entry_dtm desc
 			$params[] = $args["fname"]."%";
 		}
 		$sql = "
-select uid,lname||', '||fname,email,roles,case active when 'y' then 'Yes' else 'No' end active from bt_users
+select uid,lname||', '||fname name,email,roles,case active when 'y' then 'Yes' else 'No' end active from bt_users
 where $crit
 order by lname,fname";
 		$stmt = $this->dbh->prepare($sql);
@@ -404,7 +406,7 @@ order by lname,fname";
 		$result = $stmt->execute();
 		if ($result === FALSE) die("SQL ERROR: $sql, ".print_r($this->dbh->lastErrorMsg(),true));
 		$results = array();
-		while ($row = $result->fetchArray(SQLITE3_NUM))
+		while ($row = $result->fetchArray(SQLITE3_ASSOC))
 		{
 			$results[] = (object)$row;
 		}
@@ -518,15 +520,15 @@ Name: $lname, $fname
 		$bt = $this->getBugTypeDescr($rec->bug_type);
 		if ($rec->user_nm != "") {
 			$arr = $this->get_user($rec->user_nm);
-			$ename = "$arr[2] $arr[1]";
-			$email = $arr[3];
+			$ename = $arr->name;
+			$email = $arr->email;
 		} else $ename="";
 		if ($rec->assigned_to != "") {
 			$arr = $this->get_user($rec->assigned_to);
-			$aname = "$arr[2] $arr[1]";
-			$aemail = $arr[3];
+			$aname = $arr->name;
+			$aemail = $arr->email;
 		} else $aname="";
-		$msg = "$msg2
+		$msg = "{$args["msg2"]}
 
 Details of Bug ID {$rec->bug_id}.
 
@@ -554,7 +556,7 @@ Closed Date/Time: {$rec->cdtm}
 				$o = (object)$row;
 				if ($o->user_nm != "") {
 					$arr = $this->get_user($o->user_nm);
-					$ename = "$arr[2] $arr[1]";
+					$ename = $arr->name;
 				} else $ename="";
 				$comments = stripcslashes($o->comments);
 				$msg .= "Date/Time: {$o->edtm}, By: $ename
@@ -641,11 +643,11 @@ END;
 	// determine user info
 	function get_user ($uname) {
 	//	global $UsersArr;
-		$sql = "select lname,fname,email from bt_users where uid='$uname'";
+		$sql = "select lname,fname,email,lname||', '||fname name from bt_users where uid='$uname'";
 		$stmt = $this->dbh->query($sql);
-		$arr = $stmt->fetchArray(SQLITE3_NUM);
+		$arr = $stmt->fetchArray(SQLITE3_ASSOC);
 	//	return explode(",", $UsersArr[$uname]);
-		return $arr;
+		return (!empty($arr)) ? (object)$arr : array();
 	}
 
 	public function getHandle ()
