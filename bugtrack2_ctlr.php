@@ -19,13 +19,13 @@ switch ($args["action"])
 {
 	case "bt_init":
 		$results = $db->getBTlookups();
-		echo $results;
+		echo json_encode($results);
 		break;
 	case "bt_check_session":
 		echo $db->check_session();
 		break;
 	case "bt_login_handler":
-		echo $db->login_session($args["uid"],$args["pw"]);
+		echo json_encode($db->login_session($args["uid"],$args["pw"]));
 		//print_r($_SESSION);
 		break;
 	case "bt_logout_handler":
@@ -36,11 +36,11 @@ switch ($args["action"])
 	case "list2":
 		$results = $db->getBugs($args["type"],$args["sel_arg"]);
 		//$results = $db->getBugs();
-		echo $results;
+		echo json_encode($results);
 		break;
 	case "getUsersSearch":
 		$results = $db->getUsersSearch($args);
-		echo $results;
+		echo json_encode($results);
 		break;
 	case "assign_user":
 		$results = $db->assign_user($args);
@@ -50,7 +50,7 @@ switch ($args["action"])
 	case "add":
 	case "edit":
 		$results = $db->getBug($args["id"]);
-		echo $results;
+		echo json_encode($results);
 		break;
 	case "add_update":
 		$results = $db->addUpdateBug($args);
@@ -62,7 +62,7 @@ switch ($args["action"])
 		break;
 	case "get_worklog_entries":
 		$results = $db->get_worklog_entries($args["id"]);
-		echo $results;
+		echo json_encode($results);
 		break;
 	case "worklog_add":
 		$results = $db->addWorkLog($args);
@@ -70,7 +70,7 @@ switch ($args["action"])
 		break;
 	case "get_files":
 		$results = $db->getBugAttachments($args["id"]);
-		echo $results;
+		echo json_encode($results);
 		break;
 	case "get_module":
 		echo file_get_contents($args["file"]);
@@ -81,17 +81,17 @@ switch ($args["action"])
 		break;
 	case "admin_users":
 		$recs = $db->getUserEntries();
-		echo $recs;
+		echo json_encode($recs);
 		break;
 	case "bt_user_show":
 		if ($args["uid"] != "")
 		{
 			$recs = $db->getUserRec($args["uid"]);
-			echo $recs;
+			echo json_encode($recs);
 		}
 		else
 		{
-			$rec = "";
+			echo "[]";
 		}
 		break;
 	case "user_add_update":

@@ -134,7 +134,7 @@ where $crit
 			$row["udtm"] = $row["update_dtm"] != "" ? date("m/d/Y g:i a",strtotime($row["update_dtm"])) : "";
 			$row["cdtm"] = $row["closed_dtm"] != "" ? date("m/d/Y g:i a",strtotime($row["closed_dtm"])) : "";
 		}
-		return json_encode((object)$row);
+		return (object)$row;
 	}
 
 	public function getBugs ($type = "", $crit = "")
@@ -156,7 +156,7 @@ where 1=1 $crit
 			$results[] = (object)$row;
 		}
 		$results = array("data"=>$results);
-		return json_encode($results);
+		return $results;
 	}
 
 	// rec = record array
@@ -239,7 +239,7 @@ order by entry_dtm desc
 			$row["entry_dtm"] = $row["entry_dtm"] != "" ? date("m/d/Y g:i a",strtotime($row["entry_dtm"])) : "";
 			$results[] = (object)$row;
 		}
-		return json_encode($results);
+		return $results;
 	}
 
 	// rec = record array
@@ -321,7 +321,7 @@ order by entry_dtm desc
 		{
 			$results[] = (object)$row;
 		}
-		return json_encode($results);
+		return $results;
 	}
 
 	// rec = record array
@@ -380,7 +380,7 @@ order by entry_dtm desc
 			$results[] = (object)$row;
 		}
 		$results = array("data"=>$results);
-		return json_encode($results);
+		return $results;
 	}
 
 	public function getUsersSearch ( $args )
@@ -411,7 +411,7 @@ order by lname,fname";
 			$results[] = (object)$row;
 		}
 		$results = array("data"=>$results);
-		return json_encode($results);
+		return $results;
 	}
 	
 	public function assign_user ( $args )
@@ -441,7 +441,7 @@ order by lname,fname";
 		{
 			$results[] = (object)$row;
 		}
-		return json_encode($results);
+		return $results;
 	}
 
 	// rec = record array
@@ -611,7 +611,7 @@ END;
 		$_SESSION["email"] = $row["email"];
 		$_SESSION["roles"] = $row["roles"];
 		$_SESSION["group"] = $row["bt_group"];
-		echo json_encode($row);
+		echo $row;
 	}
 
 	public function getBTlookups ()
@@ -639,7 +639,7 @@ END;
 		$results["bt_status"] = $sarr;
 		$results["bt_priority"] = $parr;
 		$results["roles"] = $_SESSION["roles"];
-		return json_encode($results);
+		return $results;
 	}
 
 	// determine user info
