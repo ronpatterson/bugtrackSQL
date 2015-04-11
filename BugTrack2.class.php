@@ -450,26 +450,27 @@ order by lname,fname";
 		// uid, lname, fname, email, active, roles
 		extract($rec);
 		$pw5 = md5($pw);
-		$roles = join(" ",$roles);
+		//$roles = join(" ",$roles);
 		$sql = "insert into bt_users (uid, lname, fname, email, active, roles, pw, bt_group) values (?,?,?,?,?,?,?,?)";
 		$stmt = $this->dbh->prepare($sql);
-		$params = array($uid2, $lname, $fname, $email, $active, $roles, $pw5, $bt_group);
+		$params = array($uid1, $lname, $fname, $email, $active, $roles, $pw5, $bt_group);
 		for ($i=0; $i<count($params); ++$i) $stmt->bindValue($i+1,$params[$i]);
 		$result = $stmt->execute();
 		if ($result === FALSE) die("SQL ERROR: $sql, ".print_r($this->dbh->lastErrorMsg(),true));
 		$count = $this->dbh->changes();
 		if ($count == 0) die("ERROR: Record not added! $sql");
 		//return $this->dbh->lastInsertRowID();
+		$ename = $_SESSION["user_nm"];
 		$msg = "Hello,
 
-BugTrack user $uid2 was added by $ename.
+BugTrack user $uid1 was added by $ename.
 
 Name: $lname, $fname
 ";
 		$to = $email;
 		//if ($to == "") $to = $email;
 		$admin_emails = $this->get_admin_emails();
-		$headers = "From: $from_email\r\nCC: $admin_emails,$email";
+		$headers = "From: BugTrack <no_reply@none.com>\r\nCC: $admin_emails,$email";
 		//mail($to,"BugTrack $uid2 user entry",stripcslashes($msg),$headers);
 		return "SUCCESS";
 	}
@@ -637,6 +638,7 @@ END;
 		$results["bt_types"] = $results2;
 		$results["bt_status"] = $sarr;
 		$results["bt_priority"] = $parr;
+		$results["roles"] = $_SESSION["roles"];
 		return json_encode($results);
 	}
 

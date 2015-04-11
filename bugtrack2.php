@@ -10,6 +10,8 @@ require_once("btsession.php");
 date_default_timezone_set('America/Denver');
 $ttl = "BugTrack";
 $uname = (isset($_SESSION["user_nm"])) ? $_SESSION["user_nm"] : "rlpatter";
+$roles = (isset($_SESSION["roles"])) ? $_SESSION["roles"] : "";
+//print_r($_SESSION);
 ?>
 <html>
 <head>

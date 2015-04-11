@@ -92,6 +92,8 @@ var bt = // setup the bt namespace
 // 					$('body').append(user);
 					$('#bt_user_name_top').html(row.fname+' '+row.lname);
 					$('#bt_user_heading').show();
+					$('#bt_admin_btn').show();
+					if (!/admin/.test(row.roles)) $('#bt_admin_btn').hide();
 					bt.stimer = window.setInterval(bt.check_session,300000);
 				}
 			}
@@ -700,7 +702,7 @@ var bt = // setup the bt namespace
 // 		var err = bt.validate();
 		var f = document.bt_user_form;
 		var err = '';
-		if ($.trim(f.uid.value) == '')
+		if ($.trim(f.uid1.value) == '')
 			err += " - UID must not be blank<br>";
 		if ($.trim(f.lname.value) == "")
 			err += " - Last Name must not be blank<br>";
@@ -850,6 +852,7 @@ var bt = // setup the bt namespace
 		$('#cancel2').click(bt.cancelDialog2);
 		$('#bt_user_form_id').submit(bt.userhandler);
 		$('#bt_show_buttons span').button();
+		$('#bt_admin_btn').show();
 		var params = 'action=bt_init';
 		$.ajax({
 			url: bt.URL,
@@ -874,6 +877,7 @@ var bt = // setup the bt namespace
 				$('#btc_types').empty().append(sel);
 				var sel = bt.build_selection('status2',data.bt_status);
 				$('#btc_status').empty().append(sel);
+				if (!/admin/.test(bt.group_data.roles)) $('#bt_admin_btn').hide();
 			}
 		});
 	}
