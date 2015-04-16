@@ -611,7 +611,7 @@ END;
 		$_SESSION["email"] = $row["email"];
 		$_SESSION["roles"] = $row["roles"];
 		$_SESSION["group"] = $row["bt_group"];
-		echo $row;
+		return $row;
 	}
 
 	public function getBTlookups ()
