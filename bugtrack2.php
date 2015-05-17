@@ -40,7 +40,7 @@ $roles = (isset($_SESSION["roles"])) ? $_SESSION["roles"] : "";
 <body background="" bgcolor="#e0e0e0">
 <center>
 <table>
-	<tr><td><img src="BugTrack.gif" alt="BugTrack">Powered by <a href="http://www.mongodb.org/"><img src="sqlite370_banner.gif" alt="MongoDB" width="110" height="50"></a></td><td width="30">&nbsp;</td>
+	<tr><td><img src="BugTrack.gif" alt="BugTrack">Powered by <a href="http://sqlite.org/"><img src="sqlite370_banner.gif" alt="MongoDB" width="110" height="50"></a></td><td width="30">&nbsp;</td>
 	<td valign="middle"><font size="+1"><b><? echo $ttl; ?></b></font></td></tr>
 </table><br>
 <input type="hidden" name="usernm" value="<?php echo $uname ?>" id="usernm" />
